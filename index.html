@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tally Tracker Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        :root { --counter-font: 'Inter', sans-serif; }
+        body {
+            font-family: var(--counter-font);
+            min-height: 100vh; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: hidden; 
+        }
+        /* Utility classes for visual feedback and layout */
+        .active\:scale-95:active { transform: scale(0.95); }
+        .primary-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 1rem;
+            transition: all 0.2s;
+        }
+        .calendar-day {
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 0;
+            border-radius: 8px;
+            transition: background-color 0.15s;
+        }
+        .has-tally {
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .has-tally:hover { background-color: #f0fdf4; }
+        /* Main content area takes the remaining height (100vh minus header) */
+        .main-content-area {
+            height: calc(100vh - 80px); 
+            overflow-y: hidden; 
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        @media (max-width: 420px) {
+            .calendar-day { min-height: 42px; padding: 3px 0; }
+        }
+        
+        /* 💡 STYLES FOR HIDDEN FILE INPUT TRICK (Import button) */
+        .import-card-wrapper {
+            position: relative; 
+            overflow: hidden; 
+            background-color: #3b82f6; /* blue-500 */
+            border-radius: 0.75rem; 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); 
+            padding: 0.75rem; 
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .import-card-wrapper:hover {
+            background-color: #2563eb; /* blue-600 */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .import-card-wrapper:active {
+            transform: scale(0.99);
+        }
+
+        #import-file-input {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            opacity: 0; 
+            cursor: pointer; 
+            width: 100%;
+            height: 100%;
+        }
+
+        /* GLOW PULSE ANIMATION for action buttons */
+        @keyframes glow {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 
+            50% { box-shadow: 0 0 8px 4px rgba(16, 185, 129, 0.6); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        }
+        .glow-pulse:hover {
+            box-shadow: 0 0 10px 2px rgba(16, 185, 129, 0.8);
+        }
+        .glow-pulse:active {
+            animation: none;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        }
+        .glow-pulse-red:hover {
+             box-shadow: 0 0 10px 2px rgba(220, 38, 38, 0.8); 
+        }
+        .glow-pulse-red:active {
+            animation: none;
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+        }
+        .glow-pulse-blue:hover {
+             box-shadow: 0 0 10px 2px rgba(59, 130, 246, 0.8); /* blue-500 */
+        }
+        .glow-pulse-blue:active {
+            animation: none;
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900">
+
+    <div class="w-full max-w-xl flex justify-between items-center p-4 sticky top-0 bg-gray-50/95 backdrop-blur-sm z-30 flex-shrink-0">
+        <h1 class="text-3xl font-extrabold text-gray-800">Tally Track</h1>
+        <button id="hamburger-btn" class="p-3 rounded-full text-gray-700 hover:bg-gray-200 transition duration-150 active:scale-95 shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
+    <div class="w-full flex justify-center main-content-area">
+        <div id="app" class="w-full max-w-xl h-full">
+
+            <div id="counter-view" class="h-full flex flex-col justify-between">
+
+                <div id="notification" class="hidden mb-6 p-4 bg-yellow-400 text-gray-900 font-semibold rounded-xl text-center shadow-lg flex-shrink-0">
+                    🎉 Target Reached! Well done!
+                </div>
+
+                <div id="count-display"
+                     class="text-[7rem] md:text-[8rem] font-extrabold text-center bg-white rounded-3xl shadow-2xl hover:shadow-emerald-300/50 text-emerald-600 transition duration-300 ease-in-out cursor-pointer select-none flex-grow flex items-center justify-center mb-6"
+                     title="Tap anywhere to increase count">
+                    0
+                </div>
+
+                <div id="target-container" class="mb-6 p-5 bg-white rounded-2xl shadow-lg border border-gray-100 flex-shrink-0">
+                    <label for="target-input" class="block text-sm font-medium text-gray-500 mb-4">Goal Setter & Progress</label>
+                    
+                    <div class="relative pt-1 mb-4">
+                        <div class="flex mb-2 items-center justify-between">
+                            <div>
+                                <span id="progress-text" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-emerald-200 text-emerald-600">
+                                    0% Complete
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span id="target-value-display" class="text-xs font-semibold inline-block text-gray-600">
+                                    Goal: 0
+                                </span>
+                            </div>
+                        </div>
+                        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                            <div id="progress-bar" style="width:0%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-emerald-500 transition-all duration-500 ease-out"></div>
+                        </div>
+                    </div>
+                    
+                    <input type="number" id="target-input" value="0" min="0"
+                           class="w-full p-3 text-xl bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition duration-150"
+                           placeholder="Enter your target number">
+                </div>
+
+                <div class="flex space-x-4 flex-shrink-0">
+                    <button id="reset-btn" class="primary-btn flex-1 bg-red-500 hover:bg-red-600 active:scale-95 text-white shadow-xl shadow-red-300/50 focus:ring-4 focus:ring-red-400/50">
+                        Reset
+                    </button>
+                    <button id="dashboard-btn" class="primary-btn flex-1 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white shadow-xl shadow-blue-300/50 focus:ring-4 focus:ring-blue-400/50">
+                        Log Tally
+                    </button>
+                </div>
+            </div>
+
+            <div id="dashboard-view" class="hidden h-full flex flex-col">
+
+                <div class="flex justify-between items-center mb-4 p-4 bg-white rounded-2xl shadow-md border border-gray-100 flex-shrink-0">
+                    <button id="prev-month-btn" class="p-2 text-gray-700 hover:bg-gray-100 rounded-lg active:scale-95 transition duration-150" title="Previous month">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+
+                    <span id="current-month-display" class="text-xl font-semibold text-gray-800 transition duration-300"></span>
+
+                    <button id="next-month-btn" class="p-2 text-gray-700 hover:bg-gray-100 rounded-lg active:scale-95 transition duration-150" title="Next month">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                </div>
+
+                <div class="w-full mx-auto grid grid-cols-1 gap-3 mb-4 flex-shrink-0">
+                    <div class="bg-white rounded-xl shadow-md border border-gray-100 p-3 text-center">
+                        <h3 id="total-tally-title" class="text-xs font-medium text-gray-500 mb-1">Total Count</h3>
+                        <p id="total-tally" class="text-2xl font-bold text-blue-600">0</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md border border-gray-100 p-3 text-center">
+                        <h3 id="selected-tally-title" class="text-xs font-medium text-gray-500 mb-1">Selected Count</h3>
+                        <p id="selected-tally" class="text-2xl font-bold text-emerald-600">0</p>
+                    </div>
+                </div>
+
+                <div id="calendar-container" class="bg-white rounded-2xl shadow-lg p-3 border border-gray-100 w-full mx-auto flex-grow overflow-hidden flex flex-col">
+                    
+                    <div id="calendar-header" class="grid grid-cols-7 text-center text-xs font-semibold text-gray-500 mb-1 flex-shrink-0">
+                        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                    </div>
+
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-xs overflow-y-auto">
+                        </div>
+                </div>
+            </div>
+
+            <div id="backup-view" class="hidden h-full flex flex-col p-4 space-y-3">
+                <h2 class="text-xl font-bold text-gray-800 border-b pb-1 mb-2">Data Management</h2>
+
+                <div id="export-card-action" 
+                     class="bg-emerald-500 rounded-xl shadow-lg p-3 flex justify-between items-center cursor-pointer hover:bg-emerald-600 active:scale-[0.99] transition duration-200 glow-pulse">
+                    <span id="export-card-text" class="text-sm font-semibold text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Export Data / Save Backup
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="12" y1="20" x2="12" y2="10"/>
+                    </svg>
+                </div>
+
+                <div class="import-card-wrapper glow-pulse-blue">
+                    <div class="flex justify-between items-center text-white pointer-events-none">
+                        <span id="import-card-text" class="text-sm font-semibold">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 9 12 4 7 9"/><line x1="12" y1="4" x2="12" y2="15"/></svg>
+                            Restore Data / Import Log (.json)
+                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                            <circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/>
+                        </svg>
+                    </div>
+                    
+                    <input type="file" id="import-file-input" accept=".json" onchange="document.getElementById('import-log-btn-hidden').click()"/>
+                </div>
+
+                <button id="import-log-btn-hidden" class="hidden"></button>
+                
+                <div id="clear-card-action"
+                     class="bg-red-600 text-white rounded-xl shadow-xl p-3 flex justify-center items-center cursor-pointer hover:bg-red-700 active:scale-[0.99] transition duration-200 flex-shrink-0 glow-pulse-red">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    <span id="clear-card-text" class="font-semibold">Clear All Logs Permanently</span>
+                </div>
+
+                <div class="flex-grow"></div>
+            </div>
+
+            </div>
+    </div>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity duration-300 opacity-0"></div>
+
+    <div id="sidebar-menu" class="fixed inset-y-0 right-0 w-64 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col p-6">
+        <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800">Navigation</h2>
+            <button id="close-sidebar-btn" class="p-2 text-gray-700 hover:bg-gray-200 rounded-full active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <nav class="space-y-2">
+            <button id="nav-counter" class="flex items-center w-full p-3 rounded-xl transition duration-150 hover:bg-gray-100 active:bg-gray-200 text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                <span class="text-lg">Counter</span>
+            </button>
+
+            <button id="nav-dashboard" class="flex items-center w-full p-3 rounded-xl transition duration-150 hover:bg-gray-100 active:bg-gray-200 text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                <span class="text-lg">Dashboard</span>
+            </button>
+            
+            <button id="nav-backup" class="flex items-center w-full p-3 rounded-xl transition duration-150 hover:bg-gray-100 active:bg-gray-200 text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span class="text-lg">Backup & Restore</span>
+            </button>
+
+        </nav>
+    </div>
+
+    <script type="module">
+
+// --- DOM Elements ---
+const countDisplay = document.getElementById('count-display');
+const resetBtn = document.getElementById('reset-btn');
+const targetInput = document.getElementById('target-input');
+const notificationEl = document.getElementById('notification');
+const dashboardBtn = document.getElementById('dashboard-btn');
+
+// Target Progress Elements
+const progressBar = document.getElementById('progress-bar');
+const progressText = document.getElementById('progress-text');
+const targetValueDisplay = document.getElementById('target-value-display');
+
+// Views
+const counterView = document.getElementById('counter-view');
+const dashboardView = document.getElementById('dashboard-view');
+const backupView = document.getElementById('backup-view');
+
+// Sidebar Elements
+const sidebarMenu = document.getElementById('sidebar-menu');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+
+// Navigation Buttons
+const navCounterBtn = document.getElementById('nav-counter');
+const navDashboardBtn = document.getElementById('nav-dashboard');
+const navBackupBtn = document.getElementById('nav-backup');
+
+// Dashboard/Calendar Elements
+const prevMonthBtn = document.getElementById('prev-month-btn');
+const nextMonthBtn = document.getElementById('next-month-btn');
+const currentMonthDisplay = document.getElementById('current-month-display');
+const calendarGrid = document.getElementById('calendar-grid');
+
+// Cards
+const totalTallyEl = document.getElementById('total-tally');
+const selectedTallyEl = document.getElementById('selected-tally');
+const totalTallyTitleEl = document.getElementById('total-tally-title');
+const selectedTallyTitleEl = document.getElementById('selected-tally-title');
+
+// Backup & Restore **ACTION** Elements
+const exportCardAction = document.getElementById('export-card-action'); 
+const importFileInput = document.getElementById('import-file-input'); 
+const importLogBtnHidden = document.getElementById('import-log-btn-hidden');
+const clearCardAction = document.getElementById('clear-card-action'); 
+const clearCardText = document.getElementById('clear-card-text'); 
+
+// Import/Export Card Text
+const importCardText = document.getElementById('import-card-text'); 
+const exportCardText = document.getElementById('export-card-text'); 
+
+
+let logsByDate = {}; 
+let currentCalendarDate = new Date(); 
+
+// --- LOCAL STORAGE KEYS ---
+const TALLY_COUNT_KEY = 'tallyCount';
+const TALLY_TARGET_KEY = 'tallyTarget';
+const TALLY_LOG_KEY = 'tallyLog';
+
+// --- State ---
+let currentTarget = 0;
+let currentCount = 0;
+
+// --- Utility Functions ---
+function showFeedback() {
+    // Adds a quick visual pulse when the count is increased
+    countDisplay.classList.add('scale-[1.01]', 'text-amber-600', 'shadow-amber-200/50');
+    setTimeout(() => {
+        countDisplay.classList.remove('scale-[1.01]', 'text-amber-600', 'shadow-amber-200/50');
+        countDisplay.classList.add('text-emerald-600');
+    }, 100);
+}
+
+function checkTarget() {
+    if (currentTarget > 0 && currentCount >= currentTarget) {
+        notificationEl.classList.remove('hidden');
+    } else {
+        notificationEl.classList.add('hidden');
+    }
+}
+
+// --- Sidebar Logic ---
+function openSidebar() {
+    sidebarMenu.classList.remove('translate-x-full');
+    sidebarMenu.classList.add('translate-x-0');
+    sidebarOverlay.classList.remove('hidden');
+    requestAnimationFrame(() => sidebarOverlay.classList.add('opacity-100'));
+}
+
+function closeSidebar() {
+    sidebarMenu.classList.remove('translate-x-0');
+    sidebarMenu.classList.add('translate-x-full');
+    sidebarOverlay.classList.remove('opacity-100');
+    // Hide overlay after transition finishes
+    setTimeout(() => sidebarOverlay.classList.add('hidden'), 300);
+}
+
+// --- Data Processing & Progress Bar Update ---
+function updateProgressBar() {
+    let percentage = 0;
+    
+    if (currentTarget > 0) {
+        percentage = Math.min(100, Math.round((currentCount / currentTarget) * 100));
+    }
+
+    progressBar.style.width = `${percentage}%`;
+    progressText.textContent = `${percentage}% Complete`;
+    targetValueDisplay.textContent = `Goal: ${currentTarget}`;
+    
+    if (percentage >= 100) {
+        progressBar.classList.remove('bg-emerald-500');
+        progressBar.classList.add('bg-green-600');
+    } else {
+        progressBar.classList.remove('bg-green-600');
+        progressBar.classList.add('bg-emerald-500');
+    }
+}
+
+function processLogsForDailyTotals() {
+    const logs = JSON.parse(localStorage.getItem(TALLY_LOG_KEY) || '[]');
+    const totals = {};
+
+    // Group all log entries by day
+    logs.forEach(log => {
+        const datePart = new Date(log.id).toISOString().split('T')[0];
+        const count = log.count || 0;
+
+        if (!totals[datePart]) totals[datePart] = 0;
+        totals[datePart] += count;
+    });
+
+    logsByDate = totals;
+}
+
+function updateTotalTally() {
+    processLogsForDailyTotals();
+    const allDates = Object.keys(logsByDate).sort();
+    const allTimeTotal = Object.values(logsByDate).reduce((sum, val) => sum + val, 0);
+    totalTallyEl.textContent = allTimeTotal;
+
+    if (allDates.length > 0) {
+        const firstDate = new Date(allDates[0]);
+        const lastDate = new Date(allDates[allDates.length - 1]);
+        const formatDate = (d) =>
+            d.toLocaleString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+        
+        totalTallyTitleEl.textContent = `Total Count (${formatDate(firstDate)} to ${formatDate(lastDate)})`;
+    } else {
+        totalTallyTitleEl.textContent = 'Total Count (No Data)';
+    }
+}
+
+function updateSelectedMonthTally() {
+    processLogsForDailyTotals();
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+
+    let monthTotal = 0;
+
+    Object.keys(logsByDate).forEach(dateKey => {
+        const date = new Date(dateKey);
+        if (date.getFullYear() === year && date.getMonth() === month) {
+            monthTotal += logsByDate[dateKey];
+        }
+    });
+
+    selectedTallyEl.textContent = monthTotal;
+    const monthName = currentCalendarDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    selectedTallyTitleEl.textContent = `${monthName} Total`;
+}
+
+// --- Dashboard / Calendar ---
+function renderCalendar() {
+    processLogsForDailyTotals();
+    calendarGrid.innerHTML = '';
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    currentMonthDisplay.textContent = currentCalendarDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    const daysInMonth = lastDayOfMonth.getDate();
+    const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sunday, 6 = Saturday
+
+    // Add empty divs for leading days
+    for (let i = 0; i < firstDayOfWeek; i++) {
+        calendarGrid.appendChild(document.createElement('div'));
+    }
+
+    const todayKey = new Date().toISOString().split('T')[0];
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateKey = date.toISOString().split('T')[0];
+        const dailyTotal = logsByDate[dateKey] || 0;
+
+        const dayCell = document.createElement('div');
+        let classes = ['calendar-day', 'text-center', 'text-sm'];
+
+        if (dailyTotal > 0) {
+            classes.push('bg-emerald-100', 'has-tally', 'font-medium', 'text-gray-700');
+        } else {
+            classes.push('text-gray-400', 'font-normal');
+        }
+
+        if (dateKey === todayKey) {
+            classes.push('ring-2', 'ring-blue-500', 'bg-blue-200', 'text-blue-800', 'font-bold');
+        }
+        
+        dayCell.className = classes.join(' ');
+        
+        const dayNumber = `<span class="text-md">${day}</span>`;
+        const countInfo = dailyTotal > 0 
+            ? `<span class="text-xs font-bold ${dateKey === todayKey ? 'text-blue-600' : 'text-emerald-700'} ml-1">(${dailyTotal})</span>`
+            : '';
+            
+        dayCell.innerHTML = `<div>${dayNumber}${countInfo}</div>`;
+
+        calendarGrid.appendChild(dayCell);
+    }
+
+    updateSelectedMonthTally();
+}
+
+// --- View Management ---
+function switchView(viewName) {
+    closeSidebar();
+
+    // Update navigation button active state
+    document.querySelectorAll('#sidebar-menu button').forEach(btn => {
+        btn.classList.remove('text-emerald-600', 'bg-gray-100', 'font-semibold');
+        btn.classList.add('text-gray-700');
+    });
+    const activeBtn = document.getElementById(`nav-${viewName}`);
+    if (activeBtn) {
+        activeBtn.classList.remove('text-gray-700');
+        activeBtn.classList.add('text-emerald-600', 'bg-gray-100', 'font-semibold');
+    }
+
+    // Hide all views
+    counterView.classList.add('hidden');
+    dashboardView.classList.add('hidden');
+    backupView.classList.add('hidden');
+
+    // Show selected view and update title
+    if (viewName === 'counter') {
+        counterView.classList.remove('hidden');
+        document.title = 'Counter - Tally App';
+    } else if (viewName === 'dashboard') {
+        dashboardView.classList.remove('hidden');
+        document.title = 'Dashboard - Tally App';
+        renderCalendar();
+        updateTotalTally();
+    } else if (viewName === 'backup') {
+        backupView.classList.remove('hidden');
+        document.title = 'Backup & Restore - Tally App';
+    }
+}
+
+// --- Counter Logic ---
+function saveCount(newCount) {
+    currentCount = Math.max(0, newCount);
+    localStorage.setItem(TALLY_COUNT_KEY, currentCount.toString());
+    countDisplay.textContent = currentCount;
+    checkTarget();
+    updateProgressBar();
+}
+
+function saveTargetState(newTarget) {
+    const targetValue = Math.max(0, parseInt(newTarget) || 0);
+    currentTarget = targetValue;
+    localStorage.setItem(TALLY_TARGET_KEY, currentTarget.toString());
+    targetInput.value = currentTarget;
+    checkTarget();
+    updateProgressBar();
+}
+
+function loadCounter() {
+    const storedCount = localStorage.getItem(TALLY_COUNT_KEY);
+    currentCount = Math.max(0, parseInt(storedCount) || 0);
+    countDisplay.textContent = currentCount;
+
+    const storedTarget = localStorage.getItem(TALLY_TARGET_KEY);
+    currentTarget = Math.max(0, parseInt(storedTarget) || 0);
+    targetInput.value = currentTarget;
+
+    checkTarget();
+    updateProgressBar();
+}
+
+function updateCounter(delta) {
+    saveCount(currentCount + delta);
+    showFeedback();
+}
+
+function resetCounter() {
+    saveCount(0);
+    showFeedback();
+}
+
+// --- Log Handling ---
+function saveLogEntry() {
+    if (currentCount === 0) {
+        alert("Cannot log a zero count. Tap to tally first.");
+        return;
+    }
+
+    const logs = JSON.parse(localStorage.getItem(TALLY_LOG_KEY) || '[]');
+    // Add new log entry with time
+    const newLog = {
+        id: new Date().toISOString(), // Use ISO string for unique ID and time
+        count: currentCount,
+        target: currentTarget
+    };
+    logs.push(newLog);
+    localStorage.setItem(TALLY_LOG_KEY, JSON.stringify(logs));
+    
+    // Reset counter and provide feedback
+    resetCounter();
+    alert(`Tally of ${newLog.count} logged successfully!`);
+}
+
+function exportData() {
+    processLogsForDailyTotals(); // Ensure latest totals are calculated
+    const logs = localStorage.getItem(TALLY_LOG_KEY) || '[]';
+    const filename = `tally_tracker_backup_${new Date().toISOString().split('T')[0]}.json`;
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(logs);
+    
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", filename);
+    document.body.appendChild(downloadAnchorNode); // Required for Firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+
+    // Visual/Text feedback
+    exportCardText.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2"><path d="M22 11V3L15 8l-7-5v8"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Data Exported!`;
+    setTimeout(() => {
+        exportCardText.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Data / Save Backup`;
+    }, 1500);
+}
+
+function importData() {
+    const file = importFileInput.files[0];
+    if (!file) {
+        alert("Please select a .json backup file to import.");
+        return;
+    }
+
+    if (!confirm("WARNING: Importing data will completely replace ALL your current log data. Do you wish to proceed?")) {
+        // Clear file input so the same file can be selected again
+        importFileInput.value = ''; 
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const importedLogs = JSON.parse(e.target.result);
+            if (!Array.isArray(importedLogs) || importedLogs.some(log => typeof log.id !== 'string' || typeof log.count !== 'number')) {
+                 throw new Error("Invalid log file format.");
+            }
+            
+            // Success
+            localStorage.setItem(TALLY_LOG_KEY, JSON.stringify(importedLogs));
+            
+            // Clear counter and reload state from local storage (logs are processed on view switch)
+            saveCount(0); 
+            
+            // Clear file input
+            importFileInput.value = ''; 
+
+            alert(`Successfully imported ${importedLogs.length} log entries. Tally counter was reset to 0.`);
+            switchView('dashboard'); // Switch to dashboard to show imported data
+        } catch (error) {
+            alert("Error processing file. Please ensure it is a valid Tally Tracker JSON backup file. Error: " + error.message);
+            // Clear file input
+            importFileInput.value = '';
+        }
+    };
+    reader.readAsText(file);
+}
+
+function clearAllLogs() {
+    if (confirm("ABSOLUTE WARNING: This action is irreversible. Are you sure you want to permanently delete ALL Tally Tracker log data from this device?")) {
+        localStorage.removeItem(TALLY_LOG_KEY);
+        saveCount(0); // Reset the live counter as well
+        updateTotalTally();
+        
+        // Visual/Text feedback
+        clearCardText.textContent = 'ALL DATA DELETED!';
+        clearCardAction.classList.remove('bg-red-600', 'hover:bg-red-700');
+        clearCardAction.classList.add('bg-gray-400');
+        
+        setTimeout(() => {
+            clearCardText.textContent = 'Clear All Logs Permanently';
+            clearCardAction.classList.remove('bg-gray-400');
+            clearCardAction.classList.add('bg-red-600', 'hover:bg-red-700');
+            alert("All log data has been permanently cleared and the counter was reset.");
+            switchView('counter'); // Go back to counter view
+        }, 1500);
+    }
+}
+
+
+// --- Event Listeners ---
+document.addEventListener('DOMContentLoaded', () => {
+    loadCounter();
+    updateTotalTally(); // Initial calculation
+    switchView('counter'); // Start on the counter view
+});
+
+// Counter Interactions
+countDisplay.addEventListener('click', () => updateCounter(1));
+resetBtn.addEventListener('click', resetCounter);
+targetInput.addEventListener('input', (e) => saveTargetState(e.target.value));
+dashboardBtn.addEventListener('click', saveLogEntry);
+
+
+// Sidebar/Navigation
+hamburgerBtn.addEventListener('click', openSidebar);
+closeSidebarBtn.addEventListener('click', closeSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+navCounterBtn.addEventListener('click', () => switchView('counter'));
+navDashboardBtn.addEventListener('click', () => switchView('dashboard'));
+navBackupBtn.addEventListener('click', () => switchView('backup'));
+
+// Dashboard/Calendar Navigation
+prevMonthBtn.addEventListener('click', () => {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+    renderCalendar();
+});
+nextMonthBtn.addEventListener('click', () => {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+    renderCalendar();
+});
+
+// Backup & Restore Actions
+exportCardAction.addEventListener('click', exportData);
+importLogBtnHidden.addEventListener('click', importData); // Triggered by file input's onchange
+clearCardAction.addEventListener('click', clearAllLogs);
+
+// Global Keyboard Shortcut: Spacebar for quick tally increment when on counter view
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !counterView.classList.contains('hidden') && !e.target.closest('input')) {
+        e.preventDefault();
+        updateCounter(1);
+    }
+});
+    </script>
+</body>
+</html>

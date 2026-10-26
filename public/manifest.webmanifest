@@ -1,0 +1,10 @@
+{
+  "name": "Dhamma Tracker",
+  "short_name": "Dhamma",
+  "description": "Track recitations, meditation, beads, and adhithan practice.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#315b45",
+  "icons": [{ "src": "/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowDownAZ, ArrowLeft, Check, ChevronDown, Clock3, FileText, LayoutGrid, List, ListFilter, MessageSquareText, MoreHorizontal, Pencil, Plus, Search, Send, Share2, SlidersHorizontal, Trash2, X } from 'lucide-react'
 import { supabase } from '../supabaseClient'
 import { translate } from '../utils/language'
+import SplitActionButton from './SplitActionButton'
 
 function getNoteDate(note) {
   const timestamp = Date.parse(note.updatedAt || note.createdAt || '')
@@ -42,9 +43,40 @@ export default function RecitationsPage({ userId, language = 'en' }) {
   const [filterMenuOpen, setFilterMenuOpen] = useState(false)
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
   const [viewMenuOpen, setViewMenuOpen] = useState(false)
+  const viewMenuButtonRef = useRef(null)
+  const viewMenuRef = useRef(null)
+  const [viewMenuPosition, setViewMenuPosition] = useState(null)
   const [propertyMenuOpen, setPropertyMenuOpen] = useState(false)
-  const [newMenuOpen, setNewMenuOpen] = useState(false)
   const titleInputRef = useRef(null)
+
+  useEffect(() => {
+    if (!viewMenuOpen) {
+      setViewMenuPosition(null)
+      return
+    }
+
+    const updatePosition = () => {
+      const button = viewMenuButtonRef.current
+      if (!button) return
+
+      const bounds = button.getBoundingClientRect()
+      const margin = 8
+      const menuWidth = Math.min(208, window.innerWidth - margin * 2)
+      const left = Math.max(margin, Math.min(bounds.left, window.innerWidth - menuWidth - margin))
+      const menuHeight = viewMenuRef.current?.getBoundingClientRect().height || 0
+      const top = Math.max(margin, Math.min(bounds.bottom + 4, window.innerHeight - menuHeight - margin))
+
+      setViewMenuPosition({ left, top })
+    }
+
+    updatePosition()
+    window.addEventListener('resize', updatePosition)
+    window.addEventListener('scroll', updatePosition, true)
+    return () => {
+      window.removeEventListener('resize', updatePosition)
+      window.removeEventListener('scroll', updatePosition, true)
+    }
+  }, [viewMenuOpen])
 
   useEffect(() => {
     let active = true
@@ -161,7 +193,6 @@ export default function RecitationsPage({ userId, language = 'en' }) {
     setFilterMenuOpen(false)
     setSortMenuOpen(false)
     setViewMenuOpen(false)
-    setNewMenuOpen(false)
     setShowAddForm(true)
     window.setTimeout(() => titleInputRef.current?.focus(), 0)
   }
@@ -183,7 +214,6 @@ export default function RecitationsPage({ userId, language = 'en' }) {
     setCategory('')
     setComments([])
     setPropertyMenuOpen(false)
-    setNewMenuOpen(false)
   }
 
   const startEditing = note => {
@@ -351,12 +381,12 @@ export default function RecitationsPage({ userId, language = 'en' }) {
         </section>
       ) : (
         <section className="w-full">
-          <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-zinc-300 pb-3 dark:border-zinc-700 sm:flex-nowrap">
-            <div className="min-w-0">
+          <header className="flex flex-nowrap items-center justify-between gap-x-2 border-b border-zinc-300 pb-3 dark:border-zinc-700 sm:gap-x-6">
+            <div className="min-w-0 flex-1">
               <h1 className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-100">{translate('Daily Recitations', language)}</h1>
               <p className="mt-1.5 hidden text-sm text-zinc-500 dark:text-zinc-400 sm:block">{translate('Your saved prayers and recitations', language)}</p>
             </div>
-            <div className="flex min-w-0 items-center gap-1 sm:ml-auto">
+            <div className="flex shrink-0 items-center gap-0.5 sm:ml-auto sm:gap-1">
               <div className="relative">
                 <button type="button" onClick={() => { setFilterMenuOpen(value => !value); setSortMenuOpen(false); setViewMenuOpen(false) }} aria-label={translate('Filter recent notes', language)} aria-expanded={filterMenuOpen} aria-pressed={showRecentOnly} title={translate('Filter recent notes', language)} className={`grid h-8 w-8 shrink-0 place-items-center rounded transition ${filterMenuOpen || showRecentOnly ? 'bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-white' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10'}`}><ListFilter size={15} /></button>
                 {filterMenuOpen && <div role="menu" className="absolute left-0 top-9 z-40 w-48 rounded border border-zinc-200 bg-white p-1.5 shadow-lg dark:border-zinc-700 dark:bg-[#222224]">
@@ -373,8 +403,8 @@ export default function RecitationsPage({ userId, language = 'en' }) {
               </div>
               <button type="button" onClick={() => { if (showDesktopSearch) setSearch(''); setShowDesktopSearch(!showDesktopSearch) }} aria-label={translate('Search', language)} aria-expanded={showDesktopSearch} aria-pressed={showDesktopSearch} title={translate('Search', language)} className={`grid h-8 w-8 shrink-0 place-items-center rounded transition ${showDesktopSearch ? 'bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-white' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10'}`}><Search size={15} /></button>
               <div className="relative">
-                <button type="button" onClick={() => { setViewMenuOpen(value => !value); setFilterMenuOpen(false); setSortMenuOpen(false) }} aria-label={translate('View options', language)} aria-expanded={viewMenuOpen} aria-pressed={displayMode === 'cards' || compactRows || !showCommentCounts} title={translate('View options', language)} className={`grid h-8 w-8 shrink-0 place-items-center rounded transition ${viewMenuOpen || displayMode === 'cards' || compactRows || !showCommentCounts ? 'bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-white' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10'}`}><SlidersHorizontal size={15} /></button>
-                {viewMenuOpen && <div role="menu" className="absolute left-0 right-auto top-9 z-40 w-52 rounded border border-zinc-200 bg-white p-1.5 shadow-lg dark:border-zinc-700 dark:bg-[#222224] sm:left-auto sm:right-0">
+                <button ref={viewMenuButtonRef} type="button" onClick={() => { setViewMenuOpen(value => !value); setFilterMenuOpen(false); setSortMenuOpen(false) }} aria-label={translate('View options', language)} aria-expanded={viewMenuOpen} aria-pressed={displayMode === 'cards' || compactRows || !showCommentCounts} title={translate('View options', language)} className={`grid h-8 w-8 shrink-0 place-items-center rounded transition ${viewMenuOpen || displayMode === 'cards' || compactRows || !showCommentCounts ? 'bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-white' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10'}`}><SlidersHorizontal size={15} /></button>
+                {viewMenuOpen && <div ref={viewMenuRef} role="menu" style={viewMenuPosition ? { left: viewMenuPosition.left, top: viewMenuPosition.top } : { visibility: 'hidden' }} className="fixed z-40 max-h-[calc(100vh-1rem)] w-52 max-w-[calc(100vw-1rem)] overflow-y-auto rounded border border-zinc-200 bg-white p-1.5 shadow-lg dark:border-zinc-700 dark:bg-[#222224]">
                   <p className="px-2 py-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">{translate('View options', language)}</p>
                   <p className="px-2 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wide text-zinc-400">{translate('Layout', language)}</p>
                   <div className="flex flex-col gap-0.5 px-1 pb-2">
@@ -385,11 +415,7 @@ export default function RecitationsPage({ userId, language = 'en' }) {
                   <button type="button" role="menuitemcheckbox" aria-checked={showCommentCounts} onClick={() => setShowCommentCounts(value => !value)} className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800"><span>{translate('Show comment counts', language)}</span>{showCommentCounts && <Check size={14} className="text-emerald-600 dark:text-emerald-400" />}</button>
                 </div>}
               </div>
-              <div className="relative ml-1 flex h-8 shrink-0">
-                <button type="button" onClick={startNewNote} className="inline-flex h-full items-center justify-center gap-1.5 rounded-l bg-[#55785c] px-2.5 text-sm font-medium leading-none text-white transition hover:bg-[#486b50]"><Plus size={15} className="shrink-0" /><span className="relative top-px inline-flex h-full items-center leading-none">{translate('New', language)}</span></button>
-                <button type="button" onClick={() => setNewMenuOpen(open => !open)} aria-label={translate('New page options', language)} aria-expanded={newMenuOpen} className="grid h-full w-7 shrink-0 place-items-center rounded-r border-l border-white/20 bg-[#55785c] text-white transition hover:bg-[#486b50]"><ChevronDown size={14} /></button>
-                {newMenuOpen && <div className="absolute right-0 top-9 z-30 w-44 rounded border border-zinc-200 bg-white p-1 shadow-lg dark:border-zinc-700 dark:bg-[#222224]"><button type="button" onClick={startNewNote} className="w-full rounded px-3 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">{translate('New page', language)}</button></div>}
-              </div>
+              <SplitActionButton label={translate('New', language)} onClick={startNewNote} />
             </div>
           </header>
           {showDesktopSearch && <label className="mt-3 flex h-9 w-full max-w-sm items-center gap-2 rounded border border-zinc-200 px-2 dark:border-zinc-700"><Search size={14} className="shrink-0 text-zinc-500" /><input autoFocus aria-label={translate('Search', language)} value={search} onChange={event => setSearch(event.target.value)} placeholder={translate('Search', language)} className="w-full min-w-0 border-0 bg-transparent p-0 text-sm outline-none focus:ring-0" />{search && <button type="button" onClick={() => setSearch('')} aria-label={translate('Clear search', language)}><X size={14} /></button>}</label>}

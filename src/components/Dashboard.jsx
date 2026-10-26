@@ -26,7 +26,6 @@ const mobileNavItems = [
   { id: 'beads', englishLabel: 'Beads', burmeseLabel: 'ပုတီးစိပ်စက်', mobileLabel: 'ပုတီးစိပ်', icon: CircleDot },
   { id: 'meditate', englishLabel: 'Meditate', burmeseLabel: 'တရားထိုင်ချိန်မှတ်စက်', mobileLabel: 'တရားထိုင်', icon: Timer },
   { id: 'adhithan', englishLabel: 'Adhithan Tracker', burmeseLabel: 'အဓိဋ္ဌာန် မှတ်တမ်း', mobileLabel: 'အဓိဋ္ဌာန်', icon: CalendarCheck },
-  { id: 'settings', englishLabel: 'Settings', burmeseLabel: 'ဆက်တင်များ', mobileLabel: 'ဆက်တင်များ', icon: SettingsIcon },
 ]
 
 const DAILY_MEDITATION_GOAL = 15
@@ -303,6 +302,9 @@ export default function Dashboard({ userId, user, onSignOut }) {
           <span className="text-2xl leading-none" aria-hidden="true">🪷</span>
           <span className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{language === 'my' ? 'ဓမ္မမှတ်တမ်း' : 'Dhamma Tracker'}</span>
         </button>
+        <button type="button" onClick={() => setActiveTab('settings')} aria-label={translate('Settings', language)} title={translate('Settings', language)} aria-current={activeTab === 'settings' ? 'page' : undefined} className={`grid h-9 w-9 shrink-0 place-items-center rounded-md transition-colors md:hidden ${activeTab === 'settings' ? 'bg-zinc-200 text-zinc-950 dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800'}`}>
+          <SettingsIcon size={19} strokeWidth={1.8} />
+        </button>
       </header>
 
       <div className="flex min-h-0 flex-1 overflow-hidden pt-14">
@@ -536,7 +538,7 @@ export default function Dashboard({ userId, user, onSignOut }) {
       {/* Mobile page navigation */}
       <nav
         aria-label={translate('Page navigation', language)}
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-50 grid w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 grid-cols-6 gap-1 rounded-md border border-zinc-200 bg-white p-1.5 shadow-lg dark:border-zinc-800 dark:bg-[#181818] md:hidden"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-50 grid w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 grid-cols-5 gap-1 rounded-md border border-zinc-200 bg-white p-1.5 shadow-lg dark:border-zinc-800 dark:bg-[#181818] md:hidden"
       >
         {mobileNavItems.map(({ id, burmeseLabel, englishLabel, mobileLabel, icon: Icon }) => {
           const isActive = activeTab === id

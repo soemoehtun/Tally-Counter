@@ -73,7 +73,7 @@ export default function SettingsPage({ language = 'en', theme = 'light', beadTar
     <section className="mx-auto w-full max-w-screen-md pb-4">
       <header className="mb-6">
         <div className="mb-5 flex items-center">
-          <button type="button" onClick={onCancel} className="inline-flex items-center gap-1 text-xs font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"><ChevronLeft size={15} />{translate('Cancel', language)}</button>
+          <button type="button" onClick={onCancel} className="-ml-2 inline-flex h-9 items-center justify-center gap-1.5 rounded-md px-2 text-sm font-medium leading-none text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-emerald-500 focus-visible:outline-offset-2 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"><ChevronLeft size={16} aria-hidden="true" />{translate('Cancel', language)}</button>
         </div>
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">{translate('Preferences', language)}</p>
         <h1 className="text-[26px] font-normal leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">{translate('Settings', language)}</h1>
@@ -85,7 +85,7 @@ export default function SettingsPage({ language = 'en', theme = 'light', beadTar
           <h2 className={sectionLabelClass}>{translate('Practice goals', language)}</h2>
           <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-[#1b1b1b]">
             <TargetControl icon={TargetIcon} language={language} id="settings-bead-target" label={translate('Daily bead practice target', language)} value={beads} unit={translate('beads', language)} min={1} max={100000} disabled={!settingsReady} onChange={setBeads} />
-            <TargetControl icon={Clock} language={language} id="settings-daily-goal" label={translate('Daily meditation goal', language)} value={dailyGoal} unit={translate('minutes-short', language)} min={1} max={1440} disabled={!settingsReady} last onChange={setDailyGoal} />
+            <TargetControl icon={Clock} language={language} id="settings-daily-goal" label={translate('Daily meditation goal', language)} value={dailyGoal} unit={translate('minutes', language)} min={1} max={1440} disabled={!settingsReady} last onChange={setDailyGoal} />
           </div>
         </section>
 
@@ -154,9 +154,9 @@ function TargetControl({ id, label, value, unit, min, max, icon: Icon, language,
           <span className="mt-0.5 block text-[10px] text-zinc-500 dark:text-zinc-400">{translate('Maximum', language)}: {max.toLocaleString()} {unit}</span>
         </span>
       </span>
-      <div className="flex w-[120px] shrink-0 items-center justify-end gap-2">
-        <input id={id} type="number" min={min} max={max} step="1" inputMode="numeric" required value={value} disabled={disabled} onChange={event => onChange(event.target.value)} aria-label={label} className="settings-number-input w-20 border-0 bg-transparent p-0 text-left text-sm font-semibold tabular-nums text-zinc-800 outline-none focus:ring-0 disabled:opacity-50 dark:text-zinc-100" />
-        <span className="min-w-[28px] truncate text-left text-[10px] text-zinc-500 dark:text-zinc-400">{unit}</span>
+      <div className="grid w-28 shrink-0 grid-cols-[3rem_1fr] items-center gap-2">
+        <input id={id} type="number" min={min} max={max} step="1" inputMode="numeric" required value={value} disabled={disabled} onChange={event => onChange(event.target.value)} aria-label={label} className="settings-number-input w-full border-0 bg-transparent p-0 text-center text-sm font-semibold tabular-nums text-zinc-800 outline-none focus:ring-0 disabled:opacity-50 dark:text-zinc-100" />
+        <span className="whitespace-nowrap text-center text-[10px] text-zinc-500 dark:text-zinc-400">{unit}</span>
       </div>
     </div>
   )

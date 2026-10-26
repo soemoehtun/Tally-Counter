@@ -1,0 +1,210 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  :root.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-white text-zinc-900 dark:bg-[#121212] dark:text-zinc-100 font-sans antialiased selection:bg-emerald-500/20 selection:text-emerald-800 dark:selection:bg-emerald-500/30 dark:selection:text-emerald-300;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+  }
+}
+
+/* Warm paper and forest palette from the meditation tracker reference. */
+:root:not(.dark) .reference-theme .bg-white {
+  background-color: #fff;
+}
+:root:not(.dark) .reference-theme .bg-zinc-50 {
+  background-color: #fff;
+}
+:root:not(.dark) .reference-theme .border-zinc-200 {
+  border-color: #e4e4e7;
+}
+.reference-theme h1,
+.reference-theme h2,
+.reference-theme h3 {
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  letter-spacing: -0.02em;
+}
+.bead-counter-progress {
+  width: min(98vw, 26rem, 55dvh);
+  height: calc(min(98vw, 26rem, 55dvh) + 1rem);
+  aspect-ratio: auto;
+  flex: none;
+}
+.bead-counter-progress > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+@media (max-width: 767px) {
+  .bead-counter-progress {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .bead-counter-progress > svg {
+    transform: scale(1.1);
+  }
+}
+@media (min-width: 768px) {
+  .bead-counter-progress {
+    width: 100%;
+    height: auto;
+    min-height: 23rem;
+    aspect-ratio: auto;
+    flex: 1 1 0%;
+  }
+  .bead-counter-progress > svg {
+    inset: auto;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(100%, 26.25rem);
+    height: auto;
+    max-width: 26.25rem;
+  }
+}
+.meditation-timer-face {
+  width: min(98vw, 26rem, 55dvh);
+  height: calc(min(98vw, 26rem, 55dvh) + 1rem);
+  aspect-ratio: auto;
+  min-height: 0;
+  flex: none;
+  margin: auto;
+}
+.meditation-timer-face > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+.settings-number-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.settings-number-input::-webkit-inner-spin-button,
+.settings-number-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+@media (max-width: 767px) {
+  .meditation-timer-face > svg {
+    transform: scale(1.1);
+  }
+  .meditation-timer-face {
+    transform: translateY(-2.25rem);
+  }
+}
+@media (min-width: 768px) {
+  .meditation-timer-face {
+    width: 100%;
+    height: auto;
+    min-height: 23rem;
+    aspect-ratio: auto;
+    flex: 1 1 0%;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    transform: none;
+  }
+  .meditation-timer-face > svg {
+    inset: auto;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(100%, 26.25rem);
+    height: auto;
+    max-width: 26.25rem;
+  }
+}
+
+@layer components {
+  /* Supabase green button */
+  .sb-btn-primary {
+    @apply bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-medium text-xs py-1.5 px-3 rounded transition-all shadow-sm flex items-center gap-1.5 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-zinc-950 dark:font-semibold;
+  }
+  .sb-btn-secondary {
+    @apply bg-white hover:bg-zinc-50 active:scale-95 text-zinc-700 border border-zinc-200 font-medium text-xs py-1.5 px-3 rounded transition-all shadow-sm flex items-center gap-1.5 dark:bg-zinc-800/90 dark:hover:bg-zinc-700 dark:text-zinc-200 dark:border-zinc-700/80;
+  }
+  .sb-btn-danger {
+    @apply inline-flex items-center justify-center gap-1.5 leading-none bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 border border-rose-200 font-medium text-xs py-1.5 px-3 rounded transition-all dark:bg-rose-500/10 dark:hover:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30;
+  }
+  .sb-btn-danger > svg {
+    display: block;
+    flex: none;
+  }
+  .sb-card {
+    @apply bg-white rounded-md border border-zinc-200/90 p-5 shadow-sm hover:border-zinc-300 transition-colors dark:bg-[#181818] dark:border-zinc-800 dark:hover:border-zinc-700;
+  }
+  .sb-input {
+    @apply w-full bg-white border border-zinc-300 rounded px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all dark:bg-[#141414] dark:border-zinc-800 dark:text-zinc-200 dark:placeholder-zinc-500;
+  }
+
+  /* Point-file-creator / Supabase dark style menu toggle button */
+  .mobile-menu {
+    color: #71717a;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid #e4e4e7;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+  }
+  .mobile-menu:hover {
+    background: #f4f4f5;
+    color: #18181b;
+    border-color: #d4d4d8;
+  }
+  .mobile-menu:active {
+    transform: scale(0.95);
+  }
+  .mobile-menu svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+  }
+
+  .btn-primary {
+    @apply bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-medium py-2 px-4 rounded transition-all duration-150 shadow-sm dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-zinc-950 dark:font-semibold;
+  }
+  .btn-secondary {
+    @apply bg-white hover:bg-zinc-50 active:scale-95 text-zinc-700 font-medium py-2 px-4 rounded border border-zinc-200 transition-all duration-150 shadow-sm dark:bg-zinc-800/90 dark:hover:bg-zinc-700 dark:text-zinc-200 dark:border-zinc-700/80;
+  }
+  .btn-amber {
+    @apply bg-amber-500 hover:bg-amber-400 active:scale-95 text-white font-medium py-2 px-4 rounded transition-all duration-150 shadow-sm dark:text-zinc-950 dark:font-semibold;
+  }
+  .btn-danger {
+    @apply bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 border border-rose-200 font-medium py-2 px-4 rounded transition-all duration-150 shadow-sm dark:bg-rose-950/40 dark:hover:bg-rose-900/40 dark:text-rose-300 dark:border-rose-800/40;
+  }
+  .card {
+    @apply bg-white rounded-md shadow-sm border border-zinc-200/90 p-5 dark:bg-[#181818] dark:border-zinc-800;
+  }
+  .input-field {
+    @apply w-full border border-zinc-300 rounded px-3.5 py-2 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white dark:bg-[#141414] dark:border-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500;
+  }
+  .nav-item {
+    @apply flex items-center gap-2.5 px-2.5 py-2 rounded text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-all cursor-pointer w-full dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200;
+  }
+  .nav-item-active {
+    @apply flex items-center gap-2.5 px-2.5 py-2 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-xs cursor-pointer w-full dark:bg-zinc-800 dark:text-emerald-400 dark:border-zinc-700/70 dark:shadow-sm;
+  }
+}

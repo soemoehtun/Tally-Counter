@@ -10,7 +10,24 @@ export default function App() {
   const language = localStorage.getItem('tally-language') || 'en'
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
+    // Supabase consumes the confirmation tokens from the URL fragment while
+    // initializing the session. Once that finishes, remove the one-time
+    // credentials from the address bar without triggering a page reload.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+
+      const hashParams = new URLSearchParams(window.location.hash.slice(1))
+      const hasAuthResponse = ['access_token', 'refresh_token', 'error', 'error_description']
+        .some((key) => hashParams.has(key))
+
+      if (hasAuthResponse) {
+        window.history.replaceState(
+          window.history.state,
+          '',
+          `${window.location.pathname}${window.location.search}`,
+        )
+      }
+    })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
     return () => subscription.unsubscribe()
   }, [])

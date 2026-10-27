@@ -53,7 +53,7 @@ function formatChartWeekday(date, language) {
 }
 
 function formatChartMonth(date, language) {
-  return shortMonths[language === 'my' ? 'my' : 'en'][date.getMonth()]
+  return language === 'my' ? new Intl.NumberFormat('my-MM').format(date.getMonth() + 1) + 'လ' : shortMonths.en[date.getMonth()]
 }
 
 
@@ -105,9 +105,9 @@ export function BeadCountChart({ beadsRecords, meditationRecords = [], adhithanG
         }
       })
     } else {
-      const currentYear = now.getFullYear()
-      buckets = Array.from({ length: 12 }, (_, index) => {
-        const start = new Date(currentYear, index, 1)
+      const firstMonth = new Date(now.getFullYear(), now.getMonth() - 6, 1)
+      buckets = Array.from({ length: 7 }, (_, index) => {
+        const start = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + index, 1)
         const end = new Date(start.getFullYear(), start.getMonth() + 1, 0, 23, 59, 59, 999)
         return {
           key: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`,
@@ -257,7 +257,7 @@ export function BeadCountChart({ beadsRecords, meditationRecords = [], adhithanG
                   data: chartData.map(item => item.label),
                   scaleType: 'band',
                   height: 28,
-                  tickLabelStyle: { fill: 'var(--chart-text)' },
+                  tickLabelStyle: { fill: 'var(--chart-text)', fontSize: language === 'my' ? 10 : 12 },
                 }]}
                 yAxis={[{ id: 'practiceAxisId', width: 44, tickLabelStyle: { fill: 'var(--chart-text)' } }]}
                 series={[

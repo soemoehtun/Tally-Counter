@@ -5,6 +5,12 @@ import Dashboard from './components/Dashboard'
 import { Loader2 } from 'lucide-react'
 import { translate } from './utils/language'
 
+const SESSION_INIT_TIMEOUT_MS = 18_000
+
+const clearAuthCallbackFromUrl = () => {
+  window.history.replaceState(window.history.state, '', window.location.pathname)
+}
+
 export default function App() {
   const [session, setSession] = useState(undefined)
   const [initialError, setInitialError] = useState(() => {
@@ -23,34 +29,55 @@ export default function App() {
   const language = localStorage.getItem('tally-language') || 'en'
 
   useEffect(() => {
+    let mounted = true
+    let sessionSettled = false
+    const sessionTimeout = setTimeout(() => {
+      if (!mounted || sessionSettled) return
+      sessionSettled = true
+      setSession(null)
+      setInitialError(translate('Request timed out. Check your connection or email settings, then try again.', language))
+    }, SESSION_INIT_TIMEOUT_MS)
+
     // Supabase consumes confirmation tokens from the URL while initializing
     // the session. Once finished, clean the credentials from the address bar.
     supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return
+      sessionSettled = true
+      clearTimeout(sessionTimeout)
       setSession(session || null)
-      if (error) setInitialError(error.message)
+      setInitialError(error?.message || null)
       const hashParams = new URLSearchParams(window.location.hash.slice(1))
       const searchParams = new URLSearchParams(window.location.search)
       const hasAuthResponse = ['access_token', 'refresh_token', 'error', 'error_description', 'type', 'code']
         .some((key) => hashParams.has(key) || searchParams.has(key))
 
-      if (hasAuthResponse) {
-        window.history.replaceState(
-          window.history.state,
-          '',
-          window.location.pathname,
-        )
-      }
+      // Keep recovery credentials in the URL unless Supabase actually created
+      // a session. A transient initialization error must remain retryable.
+      if (!error && session && hasAuthResponse) clearAuthCallbackFromUrl()
     }).catch((error) => {
+      if (!mounted) return
+      sessionSettled = true
+      clearTimeout(sessionTimeout)
       setSession(null)
       setInitialError(error?.message || 'Could not connect to Supabase. Check your connection and try again.')
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      sessionSettled = true
+      clearTimeout(sessionTimeout)
       setSession(s)
-      if (event === 'PASSWORD_RECOVERY') setIsPasswordRecovery(true)
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true)
+        setInitialError(null)
+        clearAuthCallbackFromUrl()
+      }
       if (event === 'SIGNED_OUT') setIsPasswordRecovery(false)
     })
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => {
+      mounted = false
+      clearTimeout(sessionTimeout)
+      subscription.unsubscribe()
+    }
+  }, [language])
 
   if (isPasswordRecovery) {
     return (

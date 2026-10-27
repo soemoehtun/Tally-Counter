@@ -5,7 +5,7 @@ import {
   Clock
 } from 'lucide-react'
 
-const WEEKDAYS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const WEEKDAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WEEKDAYS_FULL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default function CalendarView({ beadsRecords = [], meditationRecords = [], adhithanRecords = [], adhithanGoals = [], compact = false, wide = false, splitLayout = false, showMeditationTime = false, hideSelectedMeditationTime = false, hideBeadsRoundProgress = false, hideCalendarLegend = false, currentBeads = 0, meditationOnly = false, titleKey, language = 'en' }) {
@@ -13,7 +13,7 @@ export default function CalendarView({ beadsRecords = [], meditationRecords = []
   const [selectedDateStr, setSelectedDateStr] = useState(() => {
     return new Date().toISOString().split('T')[0]
   })
-  const weekdaysShort = language === 'my' ? ['နွေ', 'လာ', 'ဂါ', 'ဟူး', 'ကြာ', 'သော', 'နေ'] : WEEKDAYS_SHORT
+  const weekdaysShort = language === 'my' ? ['နွေ', 'လာ', 'ဂါ', 'ဟူး', 'ကြာ', 'သော', 'စနေ'] : WEEKDAYS_SHORT
   const weekdaysFull = language === 'my' ? weekdaysShort : WEEKDAYS_FULL
 
   // Format date helper: YYYY-MM-DD

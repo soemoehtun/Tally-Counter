@@ -40,12 +40,12 @@ function getISOWeek(date) {
 
 const shortWeekdays = {
   en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-  my: ['နွေ', 'လာ', 'ဂါ', 'ဟူး', 'ကြာ', 'သော', 'နေ'],
+  my: ['နွေ', 'လာ', 'ဂါ', 'ဟူး', 'ကြာ', 'သော', 'စနေ'],
 }
 
 const shortMonths = {
   en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  my: ['ဇန်', 'ဖေ', 'မတ်', 'ဧ', 'မေ', 'ဇွန်', 'ဇူ', 'ဩ', 'စက်', 'အောက်', 'နို', 'ဒီ'],
+  my: ['ဇန်', 'ဖေ', 'မတ်', 'ဧပြီ', 'မေ', 'ဇွန်', 'ဇူလိုင်', 'ဩဂုတ်', 'စက်', 'အောက်', 'နို', 'ဒီ'],
 }
 
 function formatChartWeekday(date, language) {
@@ -162,20 +162,19 @@ export function BeadCountChart({ beadsRecords, meditationRecords = [], adhithanG
     }
 
     return buckets
-  }, [beadsRecords, meditationRecords, currentBeads, period, dateLocale])
+  }, [beadsRecords, meditationRecords, currentBeads, period, language, dateLocale])
 
   return (
-    <section className="h-full w-full max-w-[640px] rounded-md border border-zinc-300 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-[#181818]">
-      <div className="flex items-center justify-between gap-3">
+    <section className="h-full w-full max-w-[640px] rounded-md border border-zinc-300 bg-white px-2 py-3.5 sm:p-4 shadow-sm dark:border-zinc-700 dark:bg-[#181818]">
+      <div className="flex items-center justify-between gap-3 px-1 sm:px-0">
         <div>
             <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
             {translate('Activity Record', language)}
           </h3>
         </div>
-        {selectedMetric !== 'adhithanGoals' && <div className="grid grid-cols-3 gap-0.5 rounded-md bg-zinc-100 p-1 dark:bg-zinc-900" role="group" aria-label={translate('Chart time range', language)}>
+        {selectedMetric !== 'adhithanGoals' && <div className="grid grid-cols-2 gap-0.5 rounded-md bg-zinc-100 p-1 dark:bg-zinc-900" role="group" aria-label={translate('Chart time range', language)}>
           {[
             { id: 'day', label: translate('Chart Day', language) },
-            { id: 'week', label: translate('Chart Week', language) },
             { id: 'month', label: translate('Chart Month', language) },
           ].map(option => (
             <button
@@ -247,39 +246,65 @@ export function BeadCountChart({ beadsRecords, meditationRecords = [], adhithanG
               )
             })}
           </div>
-        ) : (
-          <Box sx={{ width: '100%', height: 340 }}>
-            <Suspense fallback={<div className="h-full w-full" aria-hidden="true" />}>
-              <BarChart
-                height={340}
-                hideLegend
-                xAxis={[{
-                  data: chartData.map(item => item.label),
-                  scaleType: 'band',
-                  height: 28,
-                  tickLabelStyle: { fill: 'var(--chart-text)', fontSize: language === 'my' ? 10 : 12 },
-                }]}
-                yAxis={[{ id: 'practiceAxisId', width: 44, tickLabelStyle: { fill: 'var(--chart-text)' } }]}
-                series={[
-                {
-                  data: chartData.map(item => item[selectedMetric]),
-                  label: translate(selectedMetric === 'value' ? 'ပုတီးစိတ်ခဲ့သော အကြိမ်အရေအတွက်' : 'တရားထိုင်ခဲ့သည့်ကြာချိန်', language),
-                  id: `${selectedMetric}Id`,
-                  yAxisId: 'practiceAxisId',
-                  color: selectedMetric === 'value' ? '#10b981' : '#f59e0b',
-                  valueFormatter: value => selectedMetric === 'value' ? `${translate('ပုတီး', language)} ${Number(value).toLocaleString()} ${translate('အကြိမ်ရေ', language)}` : `${Number(value).toLocaleString()} ${translate('minutes', language)}`,
-                },
-                ]}
-                grid={{ horizontal: true }}
-                margin={{ top: 8, right: 4, bottom: 8, left: 4 }}
-                sx={{
-                  '& .MuiChartsAxis-line, & .MuiChartsAxis-tick': { stroke: 'var(--chart-axis)' },
-                  '& .MuiChartsGrid-line': { stroke: 'var(--chart-grid)' },
-                }}
-              />
-            </Suspense>
-          </Box>
-        )}
+        ) : (() => {
+          const maxDataValue = Math.max(0, ...chartData.map(item => Number(item[selectedMetric]) || 0))
+          const defaultCeiling = selectedMetric === 'value' ? 108 : 30
+          const yAxisMax = maxDataValue > 0 ? Math.ceil(maxDataValue * 1.15) : defaultCeiling
+
+          return (
+            <Box sx={{ width: '100%', height: 340 }}>
+              <Suspense fallback={<div className="h-full w-full" aria-hidden="true" />}>
+                <BarChart
+                  height={340}
+                  hideLegend
+                  xAxis={[{
+                    data: chartData.map(item => item.label),
+                    scaleType: 'band',
+                    height: 48,
+                    tickLabelStyle: {
+                      fill: 'var(--chart-text)',
+                      fontSize: language === 'my' ? 10.5 : 11,
+                      fontFamily: language === 'my' ? '"Noto Sans Myanmar", sans-serif' : 'Inter, system-ui, -apple-system, sans-serif',
+                    },
+                  }]}
+                  yAxis={[{
+                    id: 'practiceAxisId',
+                    width: 36,
+                    min: 0,
+                    max: yAxisMax,
+                    tickLabelStyle: {
+                      fill: 'var(--chart-text)',
+                      fontSize: 10,
+                      fontFamily: language === 'my' ? '"Noto Sans Myanmar", sans-serif' : 'Inter, system-ui, -apple-system, sans-serif',
+                    },
+                    valueFormatter: value => Number(value).toLocaleString(),
+                  }]}
+                  series={[
+                  {
+                    data: chartData.map(item => item[selectedMetric]),
+                    label: translate(selectedMetric === 'value' ? 'ပုတီးစိတ်ခဲ့သော အကြိမ်အရေအတွက်' : 'တရားထိုင်ခဲ့သည့်ကြာချိန်', language),
+                    id: `${selectedMetric}Id`,
+                    yAxisId: 'practiceAxisId',
+                    color: selectedMetric === 'value' ? '#10b981' : '#f59e0b',
+                    valueFormatter: value => selectedMetric === 'value' ? `${translate('ပုတီး', language)} ${Number(value).toLocaleString()} ${translate('အကြိမ်ရေ', language)}` : `${Number(value).toLocaleString()} ${translate('minutes', language)}`,
+                  },
+                  ]}
+                  grid={{ horizontal: true }}
+                  margin={{ top: 12, right: 12, bottom: 42, left: 2 }}
+                  sx={{
+                    overflow: 'visible',
+                    '& svg': { overflow: 'visible' },
+                    '& .MuiChartsAxis-line, & .MuiChartsAxis-tick': { stroke: 'var(--chart-axis)' },
+                    '& .MuiChartsGrid-line': { stroke: 'var(--chart-grid)' },
+                    '& .MuiChartsAxis-tickLabel': {
+                      fontFamily: language === 'my' ? '"Noto Sans Myanmar", sans-serif' : 'Inter, system-ui, -apple-system, sans-serif',
+                    },
+                  }}
+                />
+              </Suspense>
+            </Box>
+          )
+        })()}
       </div>
 
     </section>

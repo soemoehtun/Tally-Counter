@@ -7,28 +7,31 @@ import { translate } from './utils/language'
 
 export default function App() {
   const [session, setSession] = useState(undefined)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(
+    () => new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery',
+  )
   const language = localStorage.getItem('tally-language') || 'en'
 
   useEffect(() => {
-    // Supabase consumes the confirmation tokens from the URL fragment while
-    // initializing the session. Once that finishes, remove the one-time
-    // credentials from the address bar without triggering a page reload.
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-
       const hashParams = new URLSearchParams(window.location.hash.slice(1))
-      const hasAuthResponse = ['access_token', 'refresh_token', 'error', 'error_description']
+      const hasAuthResponse = ['access_token', 'refresh_token', 'error', 'error_description', 'type']
         .some((key) => hashParams.has(key))
 
       if (hasAuthResponse) {
         window.history.replaceState(
           window.history.state,
           '',
-          `${window.location.pathname}${window.location.search}`,
+          window.location.pathname + window.location.search,
         )
       }
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      setSession(s)
+      if (event === 'PASSWORD_RECOVERY') setIsPasswordRecovery(true)
+      if (event === 'SIGNED_OUT') setIsPasswordRecovery(false)
+    })
     return () => subscription.unsubscribe()
   }, [])
 
@@ -44,6 +47,10 @@ export default function App() {
         </div>
       </div>
     )
+  }
+
+  if (isPasswordRecovery) {
+    return <Auth recovery onPasswordUpdated={() => setIsPasswordRecovery(false)} />
   }
 
   if (!session) return <Auth />

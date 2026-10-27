@@ -616,34 +616,36 @@ export default function Dashboard({ userId, user, onSignOut }) {
         </main>
       </div>
 
-      {/* Mobile page navigation */}
+      {/* Mobile page navigation - Edge-to-edge native bottom tab bar with clean white blank safe area */}
       <nav
         aria-label={translate('Page navigation', language)}
-        className="fixed bottom-[max(0.5rem,calc(env(safe-area-inset-bottom)+0.2rem))] left-1/2 z-50 grid w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 grid-cols-5 gap-1 rounded-md border border-zinc-200 bg-white p-1.5 shadow-lg dark:border-zinc-800 dark:bg-[#181818] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 w-full border-t border-zinc-200 bg-white px-2 pt-2 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+0.5rem))] shadow-[0_-2px_8px_rgba(0,0,0,0.03)] dark:border-zinc-800 dark:bg-[#181818] md:hidden"
       >
-        {mobileNavItems.map(({ id, burmeseLabel, englishLabel, mobileLabel, icon: Icon }) => {
-          const isActive = activeTab === id
-          const fullLabel = language === 'my' ? `${burmeseLabel} (${englishLabel})` : `${englishLabel} (${burmeseLabel})`
-          const displayLabel = language === 'my' ? mobileLabel : ({ dashboard: 'Home', recitations: 'Recitations', adhithan: 'Adhithan' }[id] || englishLabel)
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setActiveTab(id)}
-              aria-current={isActive ? 'page' : undefined}
-              aria-label={fullLabel}
-              title={fullLabel}
-              className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded border px-1 py-2 text-[10px] font-medium transition-colors ${
-                isActive
-                  ? 'bg-zinc-200 text-zinc-950 border-zinc-300 shadow-xs dark:bg-zinc-700 dark:text-white dark:border-zinc-600'
-                  : 'border-transparent text-zinc-950 hover:text-zinc-900 dark:text-zinc-100 dark:hover:text-white'
-              }`}
-            >
-              <Icon size={18} strokeWidth={1.8} />
-              <span className="max-w-full truncate">{displayLabel}</span>
-            </button>
-          )
-        })}
+        <div className="mx-auto grid max-w-lg grid-cols-5 gap-1">
+          {mobileNavItems.map(({ id, burmeseLabel, englishLabel, mobileLabel, icon: Icon }) => {
+            const isActive = activeTab === id
+            const fullLabel = language === 'my' ? `${burmeseLabel} (${englishLabel})` : `${englishLabel} (${burmeseLabel})`
+            const displayLabel = language === 'my' ? mobileLabel : ({ dashboard: 'Home', recitations: 'Recitations', adhithan: 'Adhithan' }[id] || englishLabel)
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setActiveTab(id)}
+                aria-current={isActive ? 'page' : undefined}
+                aria-label={fullLabel}
+                title={fullLabel}
+                className={`flex min-w-0 flex-col items-center justify-center gap-1 py-1 px-0.5 text-[10.5px] transition-colors ${
+                  isActive
+                    ? 'font-semibold text-emerald-700 dark:text-emerald-400'
+                    : 'font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                }`}
+              >
+                <Icon size={21} strokeWidth={isActive ? 2.2 : 1.7} />
+                <span className="max-w-full truncate leading-tight tracking-tight">{displayLabel}</span>
+              </button>
+            )
+          })}
+        </div>
       </nav>
 
     </div>

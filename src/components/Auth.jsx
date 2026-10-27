@@ -18,6 +18,10 @@ export default function Auth({ recovery = false, recoveryPending = false, onPass
   const [language] = useState(() => localStorage.getItem('tally-language') || 'en')
 
   useEffect(() => {
+    if (initialError) setMessage({ type: 'error', text: initialError })
+  }, [initialError])
+
+  useEffect(() => {
     if (resendCooldown <= 0) return
     const timer = setInterval(() => {
       setResendCooldown((prev) => Math.max(0, prev - 1))

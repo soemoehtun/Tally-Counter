@@ -79,9 +79,9 @@
   }
 }
 .meditation-timer-face {
-  width: min(98vw, 26rem, 55dvh);
-  height: calc(min(98vw, 26rem, 55dvh) + 1rem);
-  aspect-ratio: auto;
+  width: min(100%, 26rem, 55dvh);
+  height: auto;
+  aspect-ratio: 1 / 1;
   min-height: 0;
   flex: none;
   margin: auto;
@@ -103,11 +103,19 @@
   margin: 0;
 }
 @media (max-width: 767px) {
-  .meditation-timer-face > svg {
-    transform: scale(1.1);
-  }
   .meditation-timer-face {
+    align-self: center;
+    margin-left: auto;
+    margin-right: auto;
     transform: translateY(-2.25rem);
+  }
+  .meditation-timer-face > svg {
+    inset: auto;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(100%, 26rem, 55dvh);
+    height: auto;
   }
 }
 @media (min-width: 768px) {

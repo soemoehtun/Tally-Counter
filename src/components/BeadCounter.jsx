@@ -36,8 +36,27 @@ function getISOWeek(date) {
   thursday.setUTCDate(thursday.getUTCDate() + 3 - ((thursday.getUTCDay() + 6) % 7))
   const firstThursday = new Date(Date.UTC(thursday.getUTCFullYear(), 0, 4))
   firstThursday.setUTCDate(firstThursday.getUTCDate() + 3 - ((firstThursday.getUTCDay() + 6) % 7))
-  return 1 + Math.round((thursday - firstThursday) / 604800000)
+  return 1 + Math.round((thursday - firstThursday) / 604800000)}
+
+const shortWeekdays = {
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  my: ['နွေ', 'လာ', 'ဂါ', 'ဟူး', 'ကြာ', 'သော', 'နေ'],
 }
+
+const shortMonths = {
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  my: ['ဇန်', 'ဖေ', 'မတ်', 'ဧ', 'မေ', 'ဇွန်', 'ဇူ', 'ဩ', 'စက်', 'အောက်', 'နို', 'ဒီ'],
+}
+
+function formatChartWeekday(date, language) {
+  return shortWeekdays[language === 'my' ? 'my' : 'en'][date.getDay()]
+}
+
+function formatChartMonth(date, language) {
+  return shortMonths[language === 'my' ? 'my' : 'en'][date.getMonth()]
+}
+
+
 
 export function BeadCountChart({ beadsRecords, meditationRecords = [], adhithanGoals = [], currentBeads = 0, language = 'en' }) {
   const [period, setPeriod] = useState('day')
@@ -60,8 +79,8 @@ export function BeadCountChart({ beadsRecords, meditationRecords = [], adhithanG
         date.setDate(today.getDate() - (6 - index))
         return {
           key: localDayKey(date),
-          label: date.toLocaleDateString(dateLocale, { weekday: 'short' }),
-          detail: date.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' }),
+          label: formatChartWeekday(date, language),
+          detail: `${formatChartMonth(date, language)} ${date.toLocaleDateString(dateLocale, { day: 'numeric' })}`,
           value: 0,
           meditation: 0,
         }
@@ -79,8 +98,8 @@ export function BeadCountChart({ beadsRecords, meditationRecords = [], adhithanG
           key: `${localDayKey(start)}_${localDayKey(end)}`,
           start,
           end,
-          label: `WK-${String(getISOWeek(start)).padStart(2, '0')}`,
-          detail: `${start.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })} - ${endDisplay.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`,
+          label: `W${String(getISOWeek(start)).padStart(2, '0')}`,
+          detail: `${formatChartMonth(start, language)} ${start.toLocaleDateString(dateLocale, { day: 'numeric' })} - ${formatChartMonth(endDisplay, language)} ${endDisplay.toLocaleDateString(dateLocale, { day: 'numeric' })}`,
           value: 0,
           meditation: 0,
         }
@@ -94,7 +113,7 @@ export function BeadCountChart({ beadsRecords, meditationRecords = [], adhithanG
           key: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`,
           start,
           end,
-          label: start.toLocaleDateString(dateLocale, { month: 'short' }),
+          label: formatChartMonth(start, language),
           detail: start.toLocaleDateString(dateLocale, { month: 'long', year: 'numeric' }),
           value: 0,
           meditation: 0,

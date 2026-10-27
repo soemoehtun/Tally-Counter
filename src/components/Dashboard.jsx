@@ -619,7 +619,7 @@ export default function Dashboard({ userId, user, onSignOut }) {
       {/* Mobile page navigation */}
       <nav
         aria-label={translate('Page navigation', language)}
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-50 grid w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 grid-cols-5 gap-1 rounded-md border border-zinc-200 bg-white p-1.5 shadow-lg dark:border-zinc-800 dark:bg-[#181818] md:hidden"
+        className="fixed bottom-[max(0.5rem,calc(env(safe-area-inset-bottom)+0.2rem))] left-1/2 z-50 grid w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 grid-cols-5 gap-1 rounded-md border border-zinc-200 bg-white p-1.5 shadow-lg dark:border-zinc-800 dark:bg-[#181818] md:hidden"
       >
         {mobileNavItems.map(({ id, burmeseLabel, englishLabel, mobileLabel, icon: Icon }) => {
           const isActive = activeTab === id

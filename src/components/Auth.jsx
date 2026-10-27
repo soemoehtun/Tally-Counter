@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient'
 import { LogIn, UserPlus, Loader2, ArrowLeft, HelpCircle, Mail, RotateCw } from 'lucide-react'
 import { translate } from '../utils/language'
 
-export default function Auth({ recovery = false, onPasswordUpdated, initialError = null }) {
+export default function Auth({ recovery = false, recoveryPending = false, onPasswordUpdated, initialError = null }) {
   const [mode, setMode] = useState(recovery ? 'reset' : 'signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -57,6 +57,7 @@ export default function Auth({ recovery = false, onPasswordUpdated, initialError
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (mode === 'done' || mode === 'email-sent') return
+    if (mode === 'reset' && recoveryPending) return
     const cleanEmail = email.trim()
 
     if (mode !== 'reset' && mode !== 'done' && !cleanEmail) {
@@ -339,6 +340,12 @@ export default function Auth({ recovery = false, onPasswordUpdated, initialError
               </div>
             )}
 
+            {mode === 'reset' && recoveryPending && (
+              <div className="text-xs py-2.5 px-3 rounded font-medium border text-center bg-zinc-50 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700">
+                {translate('Checking password reset link…', language)}
+              </div>
+            )}
+
             {unconfirmedEmail && mode === 'signin' && (
               <button
                 type="button"
@@ -357,7 +364,7 @@ export default function Auth({ recovery = false, onPasswordUpdated, initialError
             {mode !== 'done' && mode !== 'email-sent' && (
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (mode === 'reset' && recoveryPending)}
                 className="sb-btn-primary w-full justify-center py-2.5 mt-1 text-xs font-semibold disabled:opacity-50"
               >
                 {loading ? (

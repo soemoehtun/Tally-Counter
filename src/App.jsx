@@ -14,16 +14,20 @@ export default function App() {
     return err ? decodeURIComponent(err.replace(/\+/g, ' ')) : null
   })
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(
-    () => new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery',
+    () => {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1))
+      const searchParams = new URLSearchParams(window.location.search)
+      return hashParams.get('type') === 'recovery' || searchParams.get('type') === 'recovery'
+    },
   )
   const language = localStorage.getItem('tally-language') || 'en'
 
   useEffect(() => {
     // Supabase consumes confirmation tokens from the URL while initializing
     // the session. Once finished, clean the credentials from the address bar.
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      setSession(session || null)
+      if (error) setInitialError(error.message)
       const hashParams = new URLSearchParams(window.location.hash.slice(1))
       const searchParams = new URLSearchParams(window.location.search)
       const hasAuthResponse = ['access_token', 'refresh_token', 'error', 'error_description', 'type', 'code']
@@ -36,6 +40,9 @@ export default function App() {
           window.location.pathname,
         )
       }
+    }).catch((error) => {
+      setSession(null)
+      setInitialError(error?.message || 'Could not connect to Supabase. Check your connection and try again.')
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s)
@@ -60,7 +67,7 @@ export default function App() {
   }
 
   if (isPasswordRecovery) {
-    return <Auth recovery onPasswordUpdated={() => setIsPasswordRecovery(false)} />
+    return <Auth recovery initialError={initialError} onPasswordUpdated={() => setIsPasswordRecovery(false)} />
   }
 
   if (!session) return <Auth initialError={initialError} />

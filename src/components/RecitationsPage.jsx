@@ -455,8 +455,8 @@ export default function RecitationsPage({ userId, language = 'en' }) {
 function DesktopPageMeta({ createdAt, category, comments, commentDraft, onCommentDraftChange, onAddComment, propertyMenuOpen, onTogglePropertyMenu, onCategoryChange, language }) {
   return (
     <>
-      <div className="grid w-full grid-cols-[7.5rem_minmax(0,1fr)] items-center gap-y-3 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
-        <span className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400"><Clock3 size={15} />{translate('Created', language)}</span>
+      <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 text-sm sm:grid sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-y-3">
+        <span className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-zinc-500 dark:text-zinc-400"><Clock3 size={15} />{language === 'my' ? 'ရက်စွဲ' : translate('Created', language)}</span>
         <span className="text-zinc-800 dark:text-zinc-200">{formatCreatedDate(createdAt, language)}</span>
         {category && <><span className="text-zinc-500 dark:text-zinc-400">{translate('Type', language)}</span><span className="text-zinc-800 dark:text-zinc-200">{translate(category, language)}</span></>}
       </div>

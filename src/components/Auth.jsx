@@ -21,7 +21,11 @@ export default function Auth() {
     if (!email || !password) { showMsg('error', translate('Please enter email and password.', language)); return }
     setLoading(true)
     if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({ email, password })
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: window.location.origin },
+      })
       setLoading(false)
       if (error) showMsg('error', translate(error.message, language))
       else showMsg('success', translate('Account created! Check your email to confirm, then sign in.', language))

@@ -52,6 +52,17 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+  if (isPasswordRecovery) {
+    return (
+      <Auth
+        recovery
+        recoveryPending={session === undefined}
+        initialError={initialError}
+        onPasswordUpdated={() => setIsPasswordRecovery(false)}
+      />
+    )
+  }
+
   if (session === undefined) {
     return (
       <div className="min-h-screen bg-white dark:bg-[#121212] flex items-center justify-center">
@@ -64,10 +75,6 @@ export default function App() {
         </div>
       </div>
     )
-  }
-
-  if (isPasswordRecovery) {
-    return <Auth recovery initialError={initialError} onPasswordUpdated={() => setIsPasswordRecovery(false)} />
   }
 
   if (!session) return <Auth initialError={initialError} />

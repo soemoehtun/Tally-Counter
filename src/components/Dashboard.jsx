@@ -7,9 +7,11 @@ import RecitationsPage from './RecitationsPage'
 import CalendarView from './CalendarView'
 import RecentPracticeActivity from './RecentPracticeActivity'
 import SettingsPage from './SettingsPage'
+import TargetDialog from './TargetDialog'
+import SplitActionButton from './SplitActionButton'
 import { translate } from '../utils/language'
 import {
-  BookOpenText, CalendarCheck, CalendarDays, CircleDot, Clock, LayoutDashboard, Settings as SettingsIcon, Timer
+  BookOpenText, CalendarCheck, CalendarDays, CircleDot, Clock, LayoutDashboard, Loader2, Plus, Settings as SettingsIcon, Timer
 } from 'lucide-react'
 
 const practiceNavItems = [
@@ -32,6 +34,11 @@ const DAILY_MEDITATION_GOAL = 15
 
 export default function Dashboard({ userId, user, onSignOut }) {
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [manualRecordOpen, setManualRecordOpen] = useState(false)
+  const [manualRecordType, setManualRecordType] = useState('beads')
+  const [manualRecordAmount, setManualRecordAmount] = useState('')
+  const [manualRecordError, setManualRecordError] = useState('')
+  const [manualRecordSaving, setManualRecordSaving] = useState(false)
   const [theme, setTheme] = useState(() => localStorage.getItem('tally-theme') || 'light')
   const [language, setLanguage] = useState(() => localStorage.getItem('tally-language') || 'en')
   const [beadTarget, setBeadTarget] = useState(() => {
@@ -181,6 +188,40 @@ export default function Dashboard({ userId, user, onSignOut }) {
 
   useEffect(() => { fetchData() }, [fetchData, refreshKey])
   const onSaved = () => setRefreshKey(k => k + 1)
+
+  const openManualRecord = (type) => {
+    setManualRecordType(type)
+    setManualRecordAmount('')
+    setManualRecordError('')
+    setManualRecordOpen(true)
+  }
+
+  const saveManualRecord = async (event) => {
+    event.preventDefault()
+    const amount = Number(manualRecordAmount)
+    const maxAmount = manualRecordType === 'beads' ? 1000000 : 1440
+    if (!Number.isInteger(amount) || amount < 1 || amount > maxAmount) {
+      setManualRecordError(translate(`Enter a whole number from 1 to ${maxAmount.toLocaleString()}.`, language))
+      return
+    }
+
+    setManualRecordSaving(true)
+    setManualRecordError('')
+    const table = manualRecordType === 'beads' ? 'beads_records' : 'meditation_records'
+    const payload = manualRecordType === 'beads'
+      ? { user_id: userId, count: amount }
+      : { user_id: userId, duration_minutes: amount }
+    const { error } = await supabase.from(table).insert(payload)
+    setManualRecordSaving(false)
+    if (error) {
+      setManualRecordError(`${translate('Save failed', language)}: ${error.message}`)
+      return
+    }
+
+    setManualRecordOpen(false)
+    setManualRecordAmount('')
+    onSaved()
+  }
   const persistSettingsRow = async overrides => {
     const { error } = await supabase.from('user_settings').upsert({
       user_id: userId,
@@ -299,7 +340,6 @@ export default function Dashboard({ userId, user, onSignOut }) {
 
       <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-[#171717] md:px-5">
         <button onClick={() => setActiveTab('dashboard')} className="flex items-center gap-2 rounded-md text-left focus-visible:outline-2 focus-visible:outline-emerald-500 focus-visible:outline-offset-2">
-          <span className="text-2xl leading-none" aria-hidden="true">🪷</span>
           <span className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{language === 'my' ? 'ဓမ္မမှတ်တမ်း' : 'Dhamma Tracker'}</span>
         </button>
         <button type="button" onClick={() => setActiveTab('settings')} aria-label={translate('Settings', language)} title={translate('Settings', language)} aria-current={activeTab === 'settings' ? 'page' : undefined} className={`grid h-9 w-9 shrink-0 place-items-center rounded-md transition-colors md:hidden ${activeTab === 'settings' ? 'bg-zinc-200 text-zinc-950 dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800'}`}>
@@ -358,6 +398,10 @@ export default function Dashboard({ userId, user, onSignOut }) {
                 </div>
                 <p className="mt-1.5 hidden text-sm text-zinc-500 dark:text-zinc-400 sm:block">{pageSubtitle}</p>
               </div>
+              <SplitActionButton
+                label={translate('Add record', language)}
+                onClick={() => openManualRecord(activeTab)}
+              />
             </div>
           )}
           {activeTab === 'dashboard' && (
@@ -532,6 +576,43 @@ export default function Dashboard({ userId, user, onSignOut }) {
               onCancel={() => setActiveTab('dashboard')}
             />
           )}
+
+          <TargetDialog
+            open={manualRecordOpen}
+            title={translate(manualRecordType === 'beads' ? 'Add completed bead session' : 'Add completed meditation session', language)}
+            description={translate('Record a practice you completed outside the live counter. It will be added to today’s records.', language)}
+            language={language}
+            onClose={() => setManualRecordOpen(false)}
+          >
+            <form onSubmit={saveManualRecord} className="flex flex-col gap-4">
+              <div>
+                <label htmlFor="manual-practice-amount" className="mb-1.5 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                  {translate(manualRecordType === 'beads' ? 'Beads completed' : 'Meditation minutes', language)}
+                </label>
+                <input
+                  id="manual-practice-amount"
+                  type="number"
+                  min="1"
+                  max={manualRecordType === 'beads' ? 1000000 : 1440}
+                  step="1"
+                  inputMode="numeric"
+                  value={manualRecordAmount}
+                  onChange={event => setManualRecordAmount(event.target.value)}
+                  required
+                  className="sb-input py-2.5"
+                  placeholder={manualRecordType === 'beads' ? 'e.g. 108' : 'e.g. 20'}
+                />
+              </div>
+              {manualRecordError && <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">{manualRecordError}</p>}
+              <div className="grid grid-cols-2 gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <button type="button" onClick={() => setManualRecordOpen(false)} disabled={manualRecordSaving} className="sb-btn-secondary w-full justify-center px-4 py-2 disabled:opacity-50">{translate('Cancel', language)}</button>
+                <button type="submit" disabled={manualRecordSaving} className="sb-btn-primary w-full justify-center px-4 py-2 disabled:opacity-50">
+                  {manualRecordSaving ? <Loader2 size={14} className="animate-spin" aria-hidden="true" /> : <Plus size={14} aria-hidden="true" />}
+                  <span>{translate(manualRecordSaving ? 'Saving…' : 'Add record', language)}</span>
+                </button>
+              </div>
+            </form>
+          </TargetDialog>
         </main>
       </div>
 

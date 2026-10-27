@@ -24,6 +24,27 @@ A React and Vite practice tracker backed by Supabase Auth and PostgreSQL.
 
 Vite embeds `VITE_*` values into the browser bundle. The Supabase publishable key (and legacy anon key) is public by design, so database security must come from RLS. Never put a Supabase `service_role` or secret key in a `VITE_*` variable, browser code, GitHub, or Vercel frontend environment variables.
 
+## Signup confirmation emails & instant fix
+
+Signup confirmation is sent by Supabase Auth backend, not by the browser app. Supabase's built-in email service is for testing only, limits sends to 3 emails/hour, and often routes to spam or is blocked by Gmail.
+
+### To fix "confirmation code not yet received":
+
+1. **Option 1 (Fastest — Instant Sign Up without codes):**
+   - Open [Supabase Dashboard → Authentication → Providers → Email](https://supabase.com/dashboard/project/xbeyhluowcrdxtgxyfme/auth/providers).
+   - Turn **OFF** the toggle for **Confirm email**.
+   - Click **Save**.
+   - *Now all signups are confirmed immediately and can sign in without waiting for any confirmation email!*
+
+2. **Option 2 (Instant SQL Fix for existing registered accounts):**
+   - Open [Supabase SQL Editor](https://supabase.com/dashboard/project/xbeyhluowcrdxtgxyfme/sql/new).
+   - Run the script in `database/fix_email_confirmation.sql`.
+   - This instantly confirms all pending accounts so they can sign in immediately, and installs an auto-confirm trigger for future signups.
+
+3. **Option 3 (Production Custom SMTP):**
+   - In Supabase Dashboard under **Authentication → SMTP Settings**, configure a custom SMTP provider (e.g., Resend, Brevo, SendGrid, or Gmail SMTP).
+   - Under **Authentication → Email Templates → Confirm signup**, ensure `{{ .Token }}` is present in the template to deliver a 6-digit confirmation code.
+
 For a new Supabase project, run `database/schema.sql` and then `database/supabase_security_and_cloud_data_migration.sql` in the Supabase SQL Editor. The latter adds notes/settings tables and installs the app’s per-user RLS policies. The existing project has already had the migration applied. Do not run SQL files against production unless you intend to change that database.
 
 ## Files to commit

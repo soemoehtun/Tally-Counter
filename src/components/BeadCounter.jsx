@@ -469,12 +469,6 @@ export default function BeadCounter({ userId, onSaved, beadsRecords = [], medita
 
       {/* ── 1. MAIN BEAD COUNTER CARD ── */}
       <div className="bead-counter-panel relative mx-auto flex w-full max-w-[960px] min-h-[calc(100dvh_-_18rem)] flex-col items-center justify-start gap-5 bg-transparent p-0 text-zinc-900 shadow-none dark:bg-transparent dark:text-zinc-100 md:min-h-[760px] md:justify-between md:gap-2 md:rounded-md md:border md:border-zinc-200 md:bg-white md:px-8 md:py-3 md:shadow-xs md:dark:border-zinc-800 md:dark:bg-[#181818] lg:px-9 lg:py-3">
-        {totalBeads > 0 && (
-          <button type="button" onClick={handleReset} className="absolute right-0 top-0 z-20 inline-flex h-7 items-center justify-center gap-1 rounded border border-rose-200 bg-white/90 px-2 text-[10px] font-medium text-rose-600 shadow-xs transition hover:bg-rose-50 dark:border-rose-500/30 dark:bg-zinc-900 dark:text-rose-400 dark:hover:bg-rose-500/10 md:hidden">
-            <RotateCcw size={12} aria-hidden="true" />
-            <span>{translate('Reset', language)}</span>
-          </button>
-        )}
         {/* ── 2. CIRCULAR BEAD GOAL PROGRESS ── */}
         <div className="bead-counter-progress relative flex w-full flex-1 items-center justify-center">
           <svg
@@ -527,7 +521,7 @@ export default function BeadCounter({ userId, onSaved, beadsRecords = [], medita
 
         {/* ── 4. ACTION BUTTONS ── */}
         <div className="mt-auto w-full md:mt-0">
-        <div className="hidden w-full grid-cols-2 gap-3 md:grid">
+        <div className="grid w-full grid-cols-2 gap-2.5 md:gap-3">
           <button
             onClick={handleReset}
             disabled={totalBeads === 0}

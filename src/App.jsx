@@ -7,23 +7,33 @@ import { translate } from './utils/language'
 
 export default function App() {
   const [session, setSession] = useState(undefined)
+  const [initialError, setInitialError] = useState(() => {
+    const hashParams = new URLSearchParams(window.location.hash.slice(1))
+    const searchParams = new URLSearchParams(window.location.search)
+    const err = hashParams.get('error_description') || searchParams.get('error_description')
+    return err ? decodeURIComponent(err.replace(/\+/g, ' ')) : null
+  })
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(
     () => new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery',
   )
   const language = localStorage.getItem('tally-language') || 'en'
 
   useEffect(() => {
+    // Supabase consumes confirmation tokens from the URL while initializing
+    // the session. Once finished, clean the credentials from the address bar.
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
+
       const hashParams = new URLSearchParams(window.location.hash.slice(1))
-      const hasAuthResponse = ['access_token', 'refresh_token', 'error', 'error_description', 'type']
-        .some((key) => hashParams.has(key))
+      const searchParams = new URLSearchParams(window.location.search)
+      const hasAuthResponse = ['access_token', 'refresh_token', 'error', 'error_description', 'type', 'code']
+        .some((key) => hashParams.has(key) || searchParams.has(key))
 
       if (hasAuthResponse) {
         window.history.replaceState(
           window.history.state,
           '',
-          window.location.pathname + window.location.search,
+          window.location.pathname,
         )
       }
     })
@@ -53,7 +63,7 @@ export default function App() {
     return <Auth recovery onPasswordUpdated={() => setIsPasswordRecovery(false)} />
   }
 
-  if (!session) return <Auth />
+  if (!session) return <Auth initialError={initialError} />
 
   return (
     <Dashboard

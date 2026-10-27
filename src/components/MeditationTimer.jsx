@@ -110,10 +110,6 @@ export default function MeditationTimer({ userId, onSaved, language = 'en', soun
     <div className="meditation-panel relative mx-auto flex min-h-[calc(100dvh_-_18rem)] w-full max-w-[960px] flex-col items-center justify-center gap-5 bg-transparent p-0 text-zinc-900 shadow-none dark:bg-transparent dark:text-zinc-100 md:min-h-[760px] md:justify-between md:gap-6 md:rounded-md md:border md:border-zinc-200 md:bg-white md:p-8 md:shadow-xs md:dark:border-zinc-800 md:dark:bg-[#181818] lg:p-9">
         {(running || totalSeconds > 0) && (
           <div className="absolute right-4 top-4 z-20 flex items-center gap-2 sm:right-8 sm:top-8">
-            <button type="button" onClick={handleReset} className="inline-flex h-7 items-center justify-center gap-1 rounded border border-rose-200 bg-white/90 px-2 text-[10px] font-medium text-rose-600 shadow-xs transition hover:bg-rose-50 dark:border-rose-500/30 dark:bg-zinc-900 dark:text-rose-400 dark:hover:bg-rose-500/10 md:hidden">
-              <RotateCcw size={12} aria-hidden="true" />
-              <span>{translate('Reset', language)}</span>
-            </button>
             <div className={`text-xs font-mono font-medium px-2.5 py-1 rounded border ${
               running
                 ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30 animate-pulse'
@@ -224,7 +220,7 @@ export default function MeditationTimer({ userId, onSaved, language = 'en', soun
 
 
       {/* Action Buttons */}
-      <div className="hidden w-full grid-cols-3 gap-2.5 md:grid">
+      <div className="grid w-full grid-cols-3 gap-2.5">
         <button
           onClick={handleTogglePlay}
           className={`min-w-0 justify-center px-1 py-2 text-[10px] sm:px-3 sm:text-xs ${running ? 'sb-btn-secondary' : 'sb-btn-primary'}`}

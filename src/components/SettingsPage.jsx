@@ -76,7 +76,7 @@ export default function SettingsPage({ language = 'en', theme = 'light', beadTar
           <button type="button" onClick={onCancel} className="-ml-2 inline-flex h-9 items-center justify-center gap-1.5 rounded-md px-2 text-sm font-medium leading-none text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-emerald-500 focus-visible:outline-offset-2 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"><ChevronLeft size={16} aria-hidden="true" />{translate('Cancel', language)}</button>
         </div>
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">{translate('Preferences', language)}</p>
-        <h1 className="text-[26px] font-normal leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">{translate('Settings', language)}</h1>
+        <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{translate('Settings', language)}</h1>
         <p className="mt-1 hidden text-xs leading-5 text-zinc-500 dark:text-zinc-400 sm:block">{translate('Manage your practice targets.', language)}</p>
       </header>
 

@@ -136,7 +136,15 @@ export default function MeditationTimer({ userId, onSaved, language = 'en', soun
 
         <button
           type="button"
-          onClick={() => targetReached ? setTargetSaveOpen(true) : handleTogglePlay()}
+          onClick={() => {
+            if (targetReached) {
+              setTargetSaveOpen(true)
+            } else if (!running && totalSeconds === 0) {
+              showFeedback('error', translate('Please click Start to begin meditation', language))
+            } else {
+              handleTogglePlay()
+            }
+          }}
           aria-label={translate(targetReached ? 'Save record' : running ? 'Pause' : 'Start Sit', language)}
           className="z-10 flex aspect-square w-[84%] max-w-[310px] cursor-pointer flex-col items-center justify-center rounded-full border-0 bg-transparent shadow-none transition active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-emerald-500 md:w-[78%] md:max-w-[280px]"
         >
@@ -144,7 +152,7 @@ export default function MeditationTimer({ userId, onSaved, language = 'en', soun
             {String(minutes).padStart(2,'0')}:{String(seconds).padStart(2,'0')}
           </span>
           <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono mt-1 uppercase tracking-widest">
-            {translate(targetReached ? 'Target reached' : running ? 'Tap to pause' : totalSeconds > 0 ? 'Tap to resume' : 'Tap to start', language)}
+            {translate(targetReached ? 'Target reached' : running ? 'Tap to pause' : totalSeconds > 0 ? 'Tap to resume' : 'Click Start to begin', language)}
           </span>
         </button>
       </div>
@@ -222,22 +230,29 @@ export default function MeditationTimer({ userId, onSaved, language = 'en', soun
       {/* Action Buttons */}
       <div className="grid w-full grid-cols-3 gap-2.5">
         <button
+          type="button"
           onClick={handleTogglePlay}
           className={`min-w-0 justify-center px-1 py-2 text-[10px] sm:px-3 sm:text-xs ${running ? 'sb-btn-secondary' : 'sb-btn-primary'}`}
         >
           {running ? <><Pause size={13}/><span>{translate('Pause', language)}</span></> : <><Play size={13}/><span>{translate('Start Sit', language)}</span></>}
         </button>
 
-        <button onClick={handleReset} className="sb-btn-danger min-w-0 justify-center px-1 py-2 text-[10px] sm:px-3 sm:text-xs">
+        <button
+          type="button"
+          onClick={handleReset}
+          disabled={totalSeconds === 0 && !running}
+          className="sb-btn-danger min-w-0 justify-center px-1 py-2 text-[10px] sm:px-3 sm:text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+        >
           <RotateCcw size={13}/><span>{translate('Reset', language)}</span>
         </button>
 
         <button
+          type="button"
           onClick={handleSave}
           disabled={saving || totalSeconds === 0}
           className="sb-btn-secondary min-w-0 justify-center px-1 py-2 text-[10px] font-medium text-amber-600 dark:text-amber-400 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3 sm:text-xs"
         >
-          <Save size={13}/><span>{translate(saving ? 'Saving…' : 'Save Sit', language)}</span>
+          <Save size={13}/><span>{translate(saving ? 'Saving…' : 'Save', language)}</span>
         </button>
       </div>
 

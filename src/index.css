@@ -9,6 +9,27 @@
   :root.dark {
     color-scheme: dark;
   }
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+    overscroll-behavior-x: none;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #root {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow-x: hidden;
+  }
   body {
     @apply bg-white text-zinc-900 dark:bg-[#121212] dark:text-zinc-100 font-sans antialiased selection:bg-emerald-500/20 selection:text-emerald-800 dark:selection:bg-emerald-500/30 dark:selection:text-emerald-300;
   }
@@ -38,46 +59,7 @@
   font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   letter-spacing: -0.02em;
 }
-.bead-counter-progress {
-  width: min(98vw, 26rem, 55dvh);
-  height: calc(min(98vw, 26rem, 55dvh) + 1rem);
-  aspect-ratio: auto;
-  flex: none;
-}
-.bead-counter-progress > svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-}
-@media (max-width: 767px) {
-  .bead-counter-progress {
-    margin-top: auto;
-    margin-bottom: auto;
-  }
-  .bead-counter-progress > svg {
-    transform: scale(1.1);
-  }
-}
-@media (min-width: 768px) {
-  .bead-counter-progress {
-    width: 100%;
-    height: auto;
-    min-height: 23rem;
-    aspect-ratio: auto;
-    flex: 1 1 0%;
-  }
-  .bead-counter-progress > svg {
-    inset: auto;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: min(100%, 26.25rem);
-    height: auto;
-    max-width: 26.25rem;
-  }
-}
+.bead-counter-progress,
 .meditation-timer-face {
   width: min(100%, 26rem, 55dvh);
   height: auto;
@@ -86,6 +68,7 @@
   flex: none;
   margin: auto;
 }
+.bead-counter-progress > svg,
 .meditation-timer-face > svg {
   position: absolute;
   inset: 0;
@@ -103,12 +86,14 @@
   margin: 0;
 }
 @media (max-width: 767px) {
+  .bead-counter-progress,
   .meditation-timer-face {
     align-self: center;
     margin-left: auto;
     margin-right: auto;
     transform: translateY(-2.25rem);
   }
+  .bead-counter-progress > svg,
   .meditation-timer-face > svg {
     inset: auto;
     left: 50%;
@@ -119,6 +104,7 @@
   }
 }
 @media (min-width: 768px) {
+  .bead-counter-progress,
   .meditation-timer-face {
     width: 100%;
     height: auto;
@@ -129,6 +115,7 @@
     margin-bottom: 0.5rem;
     transform: none;
   }
+  .bead-counter-progress > svg,
   .meditation-timer-face > svg {
     inset: auto;
     left: 50%;

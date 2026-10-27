@@ -188,7 +188,7 @@ export default function Auth({ recovery = false, recoveryPending = false, onPass
   }
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900 dark:bg-[#121212] dark:text-zinc-100 flex flex-col justify-center items-center px-4 py-12 select-none">
+    <div className="min-h-[100dvh] w-full overflow-x-hidden bg-white text-zinc-900 dark:bg-[#121212] dark:text-zinc-100 flex flex-col justify-center items-center px-4 py-12 select-none">
       <div className="w-full max-w-sm">
         {/* Brand header */}
         <div className="flex flex-col items-center mb-8 text-center">

@@ -358,10 +358,10 @@ export default function RecitationsPage({ userId, language = 'en' }) {
             </div>
           </header>
           <form id="recitation-note-form" onSubmit={editingId ? saveEdit : addRecitation}>
-            <input ref={titleInputRef} autoFocus aria-label={translate('Note title', language)} className="mb-5 w-full border-0 bg-transparent p-0 text-[2rem] font-bold leading-tight tracking-tight text-zinc-900 outline-none placeholder:text-zinc-400 focus:ring-0 dark:text-zinc-100 dark:placeholder:text-zinc-600 sm:text-4xl" placeholder={translate(editingId ? 'Title' : 'New page', language)} value={title} onChange={event => setTitle(event.target.value)} maxLength={100} required />
+            <input ref={titleInputRef} autoFocus aria-label={translate('Note title', language)} className="mb-3 w-full border-0 bg-transparent p-0 text-xl font-bold leading-snug tracking-tight text-zinc-900 outline-none placeholder:text-zinc-400 focus:ring-0 dark:text-zinc-100 dark:placeholder:text-zinc-600 sm:mb-4 sm:text-2xl" placeholder={translate(editingId ? 'Title' : 'New page', language)} value={title} onChange={event => setTitle(event.target.value)} maxLength={100} required />
             <DesktopPageMeta createdAt={editorCreatedAt} category={currentCategory} comments={currentComments} commentDraft={commentDraft} onCommentDraftChange={setCommentDraft} onAddComment={addComment} propertyMenuOpen={propertyMenuOpen} onTogglePropertyMenu={() => setPropertyMenuOpen(open => !open)} onCategoryChange={value => { updateCategory(value); setPropertyMenuOpen(false) }} language={language} />
-            {!text.trim() && <p className="mt-6 text-sm text-zinc-500 dark:text-zinc-400">{translate("Press 'enter' to continue with an empty page, or create a template", language)}</p>}
-            <textarea aria-label={translate('Note text', language)} className="mt-3 min-h-[35vh] w-full resize-y border-0 bg-transparent p-0 text-base leading-7 text-zinc-800 outline-none placeholder:text-transparent focus:ring-0 dark:text-zinc-200 md:min-h-[44vh]" placeholder={translate('Write your note…', language)} value={text} onChange={event => setText(event.target.value)} maxLength={12000} required />
+            {!text.trim() && <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400 sm:mt-5 sm:text-sm">{translate("Press 'enter' to continue with an empty page, or create a template", language)}</p>}
+            <textarea aria-label={translate('Note text', language)} className="mt-3 min-h-[35vh] w-full resize-y border-0 bg-transparent p-0 text-sm leading-6 text-zinc-800 outline-none placeholder:text-transparent focus:ring-0 dark:text-zinc-200 sm:text-base sm:leading-7 md:min-h-[44vh]" placeholder={translate('Write your note…', language)} value={text} onChange={event => setText(event.target.value)} maxLength={12000} required />
           </form>
         </section>
       ) : selectedNote ? (
@@ -374,9 +374,9 @@ export default function RecitationsPage({ userId, language = 'en' }) {
             </div>
           </header>
           <article>
-            <h1 className="mb-5 break-words text-[2rem] font-bold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-4xl">{selectedNote.title}</h1>
+            <h1 className="mb-3 break-words text-xl font-bold leading-snug tracking-tight text-zinc-900 dark:text-zinc-100 sm:mb-4 sm:text-2xl">{selectedNote.title}</h1>
             <DesktopPageMeta createdAt={selectedNote.createdAt} category={currentCategory} comments={currentComments} commentDraft={commentDraft} onCommentDraftChange={setCommentDraft} onAddComment={addComment} propertyMenuOpen={propertyMenuOpen} onTogglePropertyMenu={() => setPropertyMenuOpen(open => !open)} onCategoryChange={value => { updateCategory(value); setPropertyMenuOpen(false) }} language={language} />
-            <p className="mt-6 min-h-[35vh] whitespace-pre-wrap text-base leading-7 text-zinc-800 dark:text-zinc-200">{selectedNote.text}</p>
+            <p className="mt-4 min-h-[35vh] whitespace-pre-wrap text-sm leading-6 text-zinc-800 dark:text-zinc-200 sm:mt-5 sm:text-base sm:leading-7">{selectedNote.text}</p>
           </article>
         </section>
       ) : (
@@ -455,14 +455,37 @@ export default function RecitationsPage({ userId, language = 'en' }) {
 function DesktopPageMeta({ createdAt, category, comments, commentDraft, onCommentDraftChange, onAddComment, propertyMenuOpen, onTogglePropertyMenu, onCategoryChange, language }) {
   return (
     <>
-      <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 text-sm sm:grid sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-y-3">
-        <span className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-zinc-500 dark:text-zinc-400"><Clock3 size={15} />{language === 'my' ? 'ရက်စွဲ' : translate('Created', language)}</span>
+      <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-600 dark:text-zinc-300 sm:grid sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-y-3 sm:text-sm">
+        <div className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+          <span className="grid h-5 w-5 shrink-0 place-items-center text-zinc-500 dark:text-zinc-400">
+            <Clock3 size={15} />
+          </span>
+          <span>{language === 'my' ? 'ရက်စွဲ' : translate('Created', language)}</span>
+        </div>
         <span className="text-zinc-800 dark:text-zinc-200">{formatCreatedDate(createdAt, language)}</span>
-        {category && <><span className="text-zinc-500 dark:text-zinc-400">{translate('Type', language)}</span><span className="text-zinc-800 dark:text-zinc-200">{translate(category, language)}</span></>}
+        {category && (
+          <>
+            <div className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+              <span className="grid h-5 w-5 shrink-0 place-items-center text-zinc-500 dark:text-zinc-400">
+                <FileText size={15} />
+              </span>
+              <span>{translate('Type', language)}</span>
+            </div>
+            <span className="text-zinc-800 dark:text-zinc-200">{translate(category, language)}</span>
+          </>
+        )}
       </div>
-      <div className="relative mt-3">
-        <button type="button" onClick={onTogglePropertyMenu} aria-expanded={propertyMenuOpen} className="inline-flex items-center gap-2 rounded px-1.5 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
-          {!category && <Plus size={14} />}{category ? translate('Edit property', language) : translate('Add a property', language)}
+      <div className="relative mt-2 sm:mt-3">
+        <button
+          type="button"
+          onClick={onTogglePropertyMenu}
+          aria-expanded={propertyMenuOpen}
+          className="inline-flex items-center gap-2 rounded py-0.5 text-xs text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 sm:text-sm"
+        >
+          <span className="grid h-5 w-5 shrink-0 place-items-center">
+            <Plus size={15} />
+          </span>
+          <span>{category ? translate('Edit property', language) : translate('Add a property', language)}</span>
         </button>
         {propertyMenuOpen && (
           <div className="absolute left-0 top-full z-30 mt-1 w-full max-w-xs rounded-md border border-zinc-200 bg-white p-3 shadow-lg dark:border-zinc-700 dark:bg-[#222224]">
@@ -471,7 +494,7 @@ function DesktopPageMeta({ createdAt, category, comments, commentDraft, onCommen
               <button type="button" onClick={onTogglePropertyMenu} aria-label={translate('Cancel', language)} className="grid h-6 w-6 place-items-center rounded text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"><X size={14} /></button>
             </div>
             <div className="relative">
-              <select autoFocus value={category} onChange={event => onCategoryChange(event.target.value)} className="h-9 w-full appearance-none rounded border border-zinc-200 bg-white py-1.5 pl-2.5 pr-9 text-sm text-zinc-800 outline-none transition focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200/70 dark:border-zinc-700 dark:bg-[#1b1b1b] dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-700/70">
+              <select autoFocus value={category} onChange={event => onCategoryChange(event.target.value)} className="h-9 w-full appearance-none rounded border border-zinc-200 bg-white py-1.5 pl-2.5 pr-9 text-xs text-zinc-800 outline-none transition focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200/70 dark:border-zinc-700 dark:bg-[#1b1b1b] dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-700/70 sm:text-sm">
                 <option value="">{translate('Choose a type', language)}</option>
                 {['Daily practice', 'Prayer', 'Paritta', 'Sutta', 'Other'].map(value => <option key={value} value={value}>{translate(value, language)}</option>)}
               </select>
@@ -480,25 +503,25 @@ function DesktopPageMeta({ createdAt, category, comments, commentDraft, onCommen
           </div>
         )}
       </div>
-      <section className="mt-6 w-full">
-        <h2 className="mb-3 text-xs font-medium text-zinc-500 dark:text-zinc-400">{translate('Comments', language)}</h2>
+      <section className="mt-4 w-full sm:mt-6">
+        <h2 className="mb-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 sm:mb-3">{translate('Comments', language)}</h2>
         <div className="space-y-2">
           {comments.map(comment => (
-            <div key={comment.id} className="flex items-start gap-2.5 py-1">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-zinc-200 text-[10px] text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">S</span>
-              <p className="pt-0.5 text-sm text-zinc-800 dark:text-zinc-200">{comment.text}</p>
+            <div key={comment.id} className="flex items-start gap-2 py-1">
+              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-zinc-200 text-[10px] text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">S</span>
+              <p className="pt-0.5 text-xs text-zinc-800 dark:text-zinc-200 sm:text-sm">{comment.text}</p>
             </div>
           ))}
           <div className="flex items-center gap-2">
-            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-zinc-200 text-[10px] text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">S</span>
+            <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-zinc-200 text-[10px] text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">S</span>
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <input value={commentDraft} onChange={event => onCommentDraftChange(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); onAddComment() } }} placeholder={translate('Add a comment…', language)} className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-zinc-800 outline-none placeholder:text-zinc-500 focus:ring-0 dark:text-zinc-200" />
-              {commentDraft.trim() && <button type="button" onClick={onAddComment} aria-label={translate('Add comment', language)} className="rounded p-1 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"><Send size={14} /></button>}
+              <input value={commentDraft} onChange={event => onCommentDraftChange(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); onAddComment() } }} placeholder={translate('Add a comment…', language)} className="min-w-0 flex-1 border-0 bg-transparent p-0 text-xs text-zinc-800 outline-none placeholder:text-zinc-500 focus:ring-0 dark:text-zinc-200 sm:text-sm" />
+              {commentDraft.trim() && <button type="button" onClick={onAddComment} aria-label={translate('Add comment', language)} className="rounded p-1 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"><Send size={13} /></button>}
             </div>
           </div>
         </div>
       </section>
-      <hr className="my-5 w-full border-zinc-200 dark:border-zinc-800" />
+      <hr className="my-4 w-full border-zinc-200 dark:border-zinc-800 sm:my-5" />
     </>
   )
 }

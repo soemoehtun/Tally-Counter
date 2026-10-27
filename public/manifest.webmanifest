@@ -1,9 +1,10 @@
 {
-  "name": "Dhamma Tracker",
-  "short_name": "Dhamma",
+  "name": "ဓမ္မမှတ်တမ်း",
+  "short_name": "ဓမ္မမှတ်တမ်း",
   "description": "Track recitations, meditation, beads, and adhithan practice.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#315b45",
   "icons": [

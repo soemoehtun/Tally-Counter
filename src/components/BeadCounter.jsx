@@ -2,7 +2,7 @@ import { lazy, Suspense, useState, useCallback, useEffect, useMemo, useRef } fro
 import Box from '@mui/material/Box'
 import { supabase } from '../supabaseClient'
 import {
-  Save, RotateCcw, Repeat2, Database
+  Play, Pause, Save, RotateCcw, Repeat2, Database
 } from 'lucide-react'
 import { playBeadClick, playBellChime } from '../utils/sound'
 import CalendarView from './CalendarView'
@@ -53,7 +53,7 @@ function formatChartWeekday(date, language) {
 }
 
 function formatChartMonth(date, language) {
-  return language === 'my' ? new Intl.NumberFormat('my-MM').format(date.getMonth() + 1) + 'လ' : shortMonths.en[date.getMonth()]
+  return shortMonths[language === 'my' ? 'my' : 'en'][date.getMonth()]
 }
 
 
@@ -289,6 +289,7 @@ export function BeadCountChart({ beadsRecords, meditationRecords = [], adhithanG
 export default function BeadCounter({ userId, onSaved, beadsRecords = [], meditationRecords = [], language = 'en', soundEnabled = true, targetActionRef, targetBeadsValue = BEAD_LIMIT, onTargetChange }) {
   const [count, setCount] = useState(0)
   const [rounds, setRounds] = useState(0)
+  const [isActive, setIsActive] = useState(false)
   const [targetBeads, setTargetBeads] = useState(targetBeadsValue)
   const [targetDraft, setTargetDraft] = useState(String(targetBeadsValue))
   const [targetEditorOpen, setTargetEditorOpen] = useState(false)
@@ -328,6 +329,10 @@ export default function BeadCounter({ userId, onSaved, beadsRecords = [], medita
 
   // Handle Tap (+1)
   const handleTap = useCallback(() => {
+    if (!isActive) {
+      showFeedback('error', translate('Please click Start to begin counting', language))
+      return
+    }
     if (totalBeads >= targetBeads) return
     setLastTappedTime(Date.now())
     setCount(prev => {
@@ -342,7 +347,18 @@ export default function BeadCounter({ userId, onSaved, beadsRecords = [], medita
       if (soundEnabled) playBeadClick()
       return next
     })
-  }, [soundEnabled, totalBeads, targetBeads])
+  }, [isActive, language, soundEnabled, totalBeads, targetBeads])
+
+  const handleToggleStart = () => {
+    setIsActive(prev => {
+      const next = !prev
+      if (next) {
+        vibrate([20])
+        if (soundEnabled) playBeadClick()
+      }
+      return next
+    })
+  }
 
   const handlePageTouch = event => {
     if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select, [role="button"], [role="dialog"]')) return
@@ -387,6 +403,7 @@ export default function BeadCounter({ userId, onSaved, beadsRecords = [], medita
   const handleReset = () => {
     setCount(0)
     setRounds(0)
+    setIsActive(false)
   }
 
   // Keyboard shortcut listener
@@ -487,14 +504,26 @@ export default function BeadCounter({ userId, onSaved, beadsRecords = [], medita
 
 
       {/* ── 1. MAIN BEAD COUNTER CARD ── */}
-      <div className="bead-counter-panel relative mx-auto flex w-full max-w-[960px] min-h-[calc(100dvh_-_18rem)] flex-col items-center justify-start gap-5 bg-transparent p-0 text-zinc-900 shadow-none dark:bg-transparent dark:text-zinc-100 md:min-h-[760px] md:justify-between md:gap-2 md:rounded-md md:border md:border-zinc-200 md:bg-white md:px-8 md:py-3 md:shadow-xs md:dark:border-zinc-800 md:dark:bg-[#181818] lg:px-9 lg:py-3">
+      <div className="bead-counter-panel relative mx-auto flex min-h-[calc(100dvh_-_18rem)] w-full max-w-[960px] flex-col items-center justify-center gap-5 bg-transparent p-0 text-zinc-900 shadow-none dark:bg-transparent dark:text-zinc-100 md:min-h-[760px] md:justify-between md:gap-6 md:rounded-md md:border md:border-zinc-200 md:bg-white md:p-8 md:shadow-xs md:dark:border-zinc-800 md:dark:bg-[#181818] lg:p-9">
+        {(isActive || totalBeads > 0) && (
+          <div className="absolute right-4 top-4 z-20 flex items-center gap-2 sm:right-8 sm:top-8">
+            <div className={`text-xs font-mono font-medium px-2.5 py-1 rounded border ${
+              isActive
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30 animate-pulse'
+                : 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700'
+            }`}>
+              {isActive ? `● ${translate('Counting', language)}` : `⏸ ${translate('Paused', language)}`}
+            </div>
+          </div>
+        )}
+
         {/* ── 2. CIRCULAR BEAD GOAL PROGRESS ── */}
-        <div className="bead-counter-progress relative flex w-full flex-1 items-center justify-center">
+        <div className="bead-counter-progress relative flex w-full flex-1 min-h-[260px] md:min-h-[360px] items-center justify-center my-1 md:my-2">
           <svg
             width={SVG_SIZE}
             height={SVG_SIZE}
             viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`}
-            className="h-auto w-full max-w-[420px]"
+            className="absolute h-auto w-full max-w-[420px]"
           >
             <circle
               cx={CENTER}
@@ -522,47 +551,72 @@ export default function BeadCounter({ userId, onSaved, beadsRecords = [], medita
 
           {/* Center Interactive Tap Surface */}
           <button
+            type="button"
             onClick={handleCounterClick}
-            title={translate('Click or press Spacebar to count', language)}
-            className="absolute z-10 flex aspect-square w-[84%] max-w-[310px] cursor-pointer flex-col items-center justify-center rounded-full bg-transparent p-4 transition-transform active:scale-95 group md:w-[78%] md:max-w-[320px]"
+            title={translate(isActive ? 'Click or press Spacebar to count' : 'Click Start to begin', language)}
+            aria-label={translate(isActive ? 'Click or press Spacebar to count' : 'Click Start to begin', language)}
+            className="z-10 flex aspect-square w-[84%] max-w-[310px] cursor-pointer flex-col items-center justify-center rounded-full border-0 bg-transparent shadow-none transition active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-emerald-500 md:w-[78%] md:max-w-[280px]"
           >
             <span
-              className="inline-flex min-h-[1.15em] items-center justify-center tabular-nums font-serif text-6xl font-normal leading-[1.15] tracking-wider text-[#304438] transition-transform group-hover:scale-105 dark:text-zinc-100 sm:text-7xl"
+              className="text-5xl sm:text-6xl font-normal text-[#304438] dark:text-zinc-100 tracking-wider font-serif"
             >
               {totalBeads.toLocaleString()}
             </span>
 
-            <span className="mt-2 text-[12px] font-medium tracking-[0.2em] text-zinc-500 dark:text-zinc-400 uppercase">
-              {translate('Target', language)} {targetBeads.toLocaleString()} · {targetProgress}%
+            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono mt-1 uppercase tracking-widest">
+              {!isActive && totalBeads === 0
+                ? translate('Click Start to count', language)
+                : !isActive
+                  ? translate('Paused', language)
+                  : `${translate('Target', language)} ${targetBeads.toLocaleString()} · ${targetProgress}%`}
             </span>
           </button>
         </div>
 
         {/* ── 4. ACTION BUTTONS ── */}
-        <div className="mt-auto w-full md:mt-0">
-        <div className="grid w-full grid-cols-2 gap-2.5 md:gap-3">
+        <div className="grid w-full grid-cols-3 gap-2.5">
           <button
+            type="button"
+            onClick={handleToggleStart}
+            className={`min-w-0 justify-center px-1 py-2 text-[10px] sm:px-3 sm:text-xs ${isActive ? 'sb-btn-secondary' : 'sb-btn-primary'}`}
+          >
+            {isActive ? (
+              <>
+                <Pause size={13} />
+                <span>{translate('Pause', language)}</span>
+              </>
+            ) : (
+              <>
+                <Play size={13} />
+                <span>{translate(totalBeads > 0 ? 'Resume' : 'Start Beads', language)}</span>
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
             onClick={handleReset}
             disabled={totalBeads === 0}
-            className="sb-btn-danger justify-center py-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="sb-btn-danger min-w-0 justify-center px-1 py-2 text-[10px] sm:px-3 sm:text-xs disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <RotateCcw size={14} />
+            <RotateCcw size={13} />
             <span>{translate('Reset', language)}</span>
           </button>
 
           <button
+            type="button"
             onClick={handleSave}
             disabled={saving || totalBeads === 0}
-            className="sb-btn-primary justify-center py-2.5 disabled:opacity-40 disabled:cursor-not-allowed font-semibold"
+            className="sb-btn-secondary min-w-0 justify-center px-1 py-2 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3 sm:text-xs"
           >
-            <Save size={14} />
+            <Save size={13} />
             <span>{translate(saving ? 'Saving…' : 'Save', language)}</span>
           </button>
         </div>
 
         {/* Feedback message banner */}
         {feedback && (
-          <div className={`w-full text-center text-xs py-2.5 px-3 rounded-md font-medium border mt-3 transition-all ${
+          <div className={`w-full text-center text-xs py-2 px-3 rounded font-medium border ${
             feedback.type === 'success'
               ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30'
               : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/30'
@@ -570,7 +624,6 @@ export default function BeadCounter({ userId, onSaved, beadsRecords = [], medita
             {feedback.msg}
           </div>
         )}
-        </div>
       </div>
 
       <div className="flex w-full flex-col items-center gap-5 xl:items-start">

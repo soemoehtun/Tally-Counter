@@ -336,9 +336,9 @@ export default function Dashboard({ userId, user, onSignOut }) {
     : translate(pageSubtitleKey, language)
 
   return (
-    <div className={`reference-theme flex h-screen flex-col overflow-hidden bg-white font-sans text-zinc-900 dark:bg-[#121212] dark:text-zinc-100 ${activeTab === 'recitations' ? 'select-text' : 'select-none'}`}>
+    <div className={`reference-theme flex h-[100dvh] w-full max-w-full flex-col overflow-hidden overscroll-none bg-white font-sans text-zinc-900 dark:bg-[#121212] dark:text-zinc-100 ${activeTab === 'recitations' ? 'select-text' : 'select-none'}`}>
 
-      <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-[#171717] md:px-5">
+      <header className="fixed inset-x-0 top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 pt-[env(safe-area-inset-top)] dark:border-zinc-800 dark:bg-[#171717] md:px-5">
         <button onClick={() => setActiveTab('dashboard')} className="flex items-center gap-2 rounded-md text-left focus-visible:outline-2 focus-visible:outline-emerald-500 focus-visible:outline-offset-2">
           <span className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{language === 'my' ? 'ဓမ္မမှတ်တမ်း' : 'Dhamma Tracker'}</span>
         </button>
@@ -347,7 +347,7 @@ export default function Dashboard({ userId, user, onSignOut }) {
         </button>
       </header>
 
-      <div className="flex min-h-0 flex-1 overflow-hidden pt-14">
+      <div className="flex min-h-0 flex-1 overflow-hidden pt-[calc(3.5rem+env(safe-area-inset-top))]">
         {/* Compact desktop page rail */}
         <aside className="hidden w-16 shrink-0 flex-col items-center gap-1.5 border-r border-zinc-200 bg-white py-4 dark:border-zinc-800 dark:bg-[#161616] md:flex">
           <nav className="flex flex-col items-center gap-1.5" aria-label={translate('Practice pages', language)}>
@@ -600,7 +600,7 @@ export default function Dashboard({ userId, user, onSignOut }) {
                   onChange={event => setManualRecordAmount(event.target.value)}
                   required
                   className="sb-input py-2.5"
-                  placeholder={manualRecordType === 'beads' ? 'e.g. 108' : 'e.g. 20'}
+                  placeholder={translate(manualRecordType === 'beads' ? 'e.g. 108' : 'e.g. 20', language)}
                 />
               </div>
               {manualRecordError && <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">{manualRecordError}</p>}

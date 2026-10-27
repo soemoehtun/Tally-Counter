@@ -44,7 +44,7 @@ export default function Auth({ recovery = false, onPasswordUpdated }) {
         showMsg('success', translate('Enter the confirmation code sent to your email.', language))
       }
     } else if (mode === 'verify-signup') {
-      const { error } = await supabase.auth.verifyOtp({ email, token: otp.trim(), type: 'signup' })
+      const { error } = await supabase.auth.verifyOtp({ email, token: otp.trim(), type: 'email' })
       setLoading(false)
       if (error) showMsg('error', translate(error.message, language))
     } else if (mode === 'forgot') {

@@ -8,6 +8,7 @@ export default function Auth({ recovery = false, onPasswordUpdated }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
   const [language] = useState(() => localStorage.getItem('tally-language') || 'en')
@@ -26,17 +27,26 @@ export default function Auth({ recovery = false, onPasswordUpdated }) {
       if (!password || !passwordConfirm) { showMsg('error', translate('Please enter and confirm your new password.', language)); return }
       if (password !== passwordConfirm) { showMsg('error', translate('Passwords do not match.', language)); return }
     }
+    if (mode === 'verify-signup' && !otp.trim()) { showMsg('error', translate('Please enter the confirmation code.', language)); return }
 
     setLoading(true)
     if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { emailRedirectTo: window.location.origin },
       })
       setLoading(false)
       if (error) showMsg('error', translate(error.message, language))
-      else showMsg('success', translate('Account created! Check your email to confirm, then sign in.', language))
+      else if (data.session) showMsg('success', translate('Account created successfully.', language))
+      else {
+        setMode('verify-signup')
+        showMsg('success', translate('Enter the confirmation code sent to your email.', language))
+      }
+    } else if (mode === 'verify-signup') {
+      const { error } = await supabase.auth.verifyOtp({ email, token: otp.trim(), type: 'signup' })
+      setLoading(false)
+      if (error) showMsg('error', translate(error.message, language))
     } else if (mode === 'forgot') {
       const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin })
       setLoading(false)
@@ -66,7 +76,7 @@ export default function Auth({ recovery = false, onPasswordUpdated }) {
             <span className="text-xl font-bold">{translate('Dhamma Tracker', language)}</span>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {translate(mode === 'reset' ? 'Set a new password' : mode === 'forgot' ? 'Reset your password' : mode === 'done' ? 'Your password has been changed' : mode === 'signin' ? 'Sign in to your Dhamma workspace' : 'Create an account to begin your practice', language)}
+            {translate(mode === 'reset' ? 'Set a new password' : mode === 'forgot' ? 'Reset your password' : mode === 'verify-signup' ? 'Confirm your email' : mode === 'done' ? 'Your password has been changed' : mode === 'signin' ? 'Sign in to your Dhamma workspace' : 'Create an account to begin your practice', language)}
           </p>
         </div>
 
@@ -95,10 +105,14 @@ export default function Auth({ recovery = false, onPasswordUpdated }) {
                 <label className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 mb-1.5 block">{translate('Confirm New Password', language)}</label>
                 <input className="sb-input py-2" type="password" placeholder="••••••••" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} autoComplete="new-password" />
               </div>}
+              {mode === 'verify-signup' && <div>
+                <label className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 mb-1.5 block">{translate('Email confirmation code', language)}</label>
+                <input className="sb-input py-2" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={8} placeholder={translate('Enter the code from your email', language)} value={otp} onChange={e => setOtp(e.target.value)} />
+              </div>}
               {message && <div className="text-xs py-2 px-3 rounded font-medium border text-center">{message.text}</div>}
               <button type="submit" disabled={loading} className="sb-btn-primary w-full justify-center py-2.5 mt-2 text-xs font-semibold disabled:opacity-50">
                 {loading ? <Loader2 size={14} className="animate-spin" /> : mode === 'signin' ? <LogIn size={14} /> : <UserPlus size={14} />}
-                <span>{translate(loading ? 'Please wait…' : mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Create Account' : mode === 'forgot' ? 'Send Reset Link' : 'Update Password', language)}</span>
+                <span>{translate(loading ? 'Please wait…' : mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Create Account' : mode === 'forgot' ? 'Send Reset Link' : mode === 'verify-signup' ? 'Confirm Email' : 'Update Password', language)}</span>
               </button>
             </form>
           )}

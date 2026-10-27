@@ -357,6 +357,7 @@ const myanmar = {
   'Sign In': 'အကောင့်ဝင်ရန်',
   'Forgot password?': 'စကားဝှက် မေ့နေပါသလား။',
   'Reset your password': 'စကားဝှက်ကို ပြန်လည်သတ်မှတ်ပါ',
+  'Checking password reset link…': 'စကားဝှက် ပြန်လည်သတ်မှတ်ရန် လင့်ခ်ကို စစ်ဆေးနေသည်…',
   'Check your email': 'အီးမေးလ်ကို စစ်ဆေးပါ',
   'Choose a new password': 'စကားဝှက်အသစ် ရွေးချယ်ပါ',
   'Password updated': 'စကားဝှက် ပြောင်းလဲပြီးပါပြီ',
